@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* Custom blues */
+  --blue-dark: #00304B;
+  --blue-medium-dark: #005281;
+  --blue-medium: #0070B1;
+  --blue-light: #0088D6;
 }
 
 @theme inline {
@@ -23,4 +29,43 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom blue sections for auth pages */
+.blue-section-1 {
+  background-color: var(--blue-light);
+}
+
+.blue-section-2 {
+  background-color: var(--blue-medium);
+}
+
+.blue-section-3 {
+  background-color: var(--blue-medium-dark);
+}
+
+.blue-section-4 {
+  background-color: var(--blue-dark);
+}
+
+/* Custom thin scrollbar */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Hide scrollbars completely */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
