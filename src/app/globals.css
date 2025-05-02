@@ -4,12 +4,39 @@
   --background: #ffffff;
   --foreground: #171717;
   
+
+   /* For onboarding page */
   /* Custom blues */
   --blue-dark: #00304B;
   --blue-medium-dark: #005281;
   --blue-medium: #0070B1;
   --blue-light: #0088D6;
+
+
+  --orange-dark: #5E2C00;
+  --orange-medium-dark: #984700;
+  --orange-medium: #D26300;
+  --orange-light: #FF7800;
+
+  
+
+   /* For (main) page */
+  --astro-orange: #FF7800;
+  --astro-blue: #0387D0;
+  --astro-green: #059440;
+  --astro-yellow: #CCAF1B;
+
+
+
+  
+
+
+
+
+
+
 }
+
 
 @theme inline {
   --color-background: var(--background);
@@ -46,6 +73,23 @@ body {
 
 .blue-section-4 {
   background-color: var(--blue-dark);
+}
+
+/* Custom orange sections for auth pages */
+.orange-section-1 {
+  background-color: var(--orange-light);
+}
+
+.orange-section-2 {
+  background-color: var(--orange-medium);
+}
+
+.orange-section-3 {
+  background-color: var(--orange-medium-dark);
+}
+
+.orange-section-4 {
+  background-color: var(--orange-dark);
 }
 
 /* Custom thin scrollbar */

@@ -32,7 +32,7 @@ export default function SignUpPage() {
     }
   };
 
-  const blueRectVariants = {
+  const orangeRectVariants = {
     hidden: { opacity: 0, scaleX: 0.85 },
     visible: {
       opacity: 1,
@@ -120,7 +120,7 @@ export default function SignUpPage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Left Column - Blue Rectangles */}
+      {/* Left Column - Orange Rectangles */}
       <div className="hidden md:block md:w-3/5 relative overflow-hidden">
         {/* Subtle background pulse effect */}
         <motion.div 
@@ -130,31 +130,31 @@ export default function SignUpPage() {
           animate="animate"
         ></motion.div>
         
-        {/* Blue rectangle sections with animations */}
+        {/* Orange rectangle sections with animations */}
         <motion.div 
-          className="absolute inset-0 h-2/5 blue-section-1 origin-left"
-          variants={blueRectVariants}
+          className="absolute inset-0 h-2/5 orange-section-1 origin-left"
+          variants={orangeRectVariants}
           initial="hidden"
           animate="visible"
           transition={{ delay: 0.1 }}
         ></motion.div>
         <motion.div 
-          className="absolute inset-0 top-2/5 h-1/5 blue-section-2 origin-left"
-          variants={blueRectVariants}
+          className="absolute inset-0 top-2/5 h-1/5 orange-section-2 origin-left"
+          variants={orangeRectVariants}
           initial="hidden"
           animate="visible"
           transition={{ delay: 0.25 }}
         ></motion.div>
         <motion.div 
-          className="absolute inset-0 top-3/5 h-1/5 blue-section-3 origin-left"
-          variants={blueRectVariants}
+          className="absolute inset-0 top-3/5 h-1/5 orange-section-3 origin-left"
+          variants={orangeRectVariants}
           initial="hidden"
           animate="visible"
           transition={{ delay: 0.4 }}
         ></motion.div>
         <motion.div 
-          className="absolute inset-0 top-4/5 h-1/5 blue-section-4 origin-left"
-          variants={blueRectVariants}
+          className="absolute inset-0 top-4/5 h-1/5 orange-section-4 origin-left"
+          variants={orangeRectVariants}
           initial="hidden"
           animate="visible"
           transition={{ delay: 0.55 }}
@@ -265,10 +265,10 @@ export default function SignUpPage() {
               appearance={{
                 baseTheme: dark,
                 elements: {
-                  formButtonPrimary: 'bg-teal-600 text-sm normal-case',
+                  formButtonPrimary: 'bg-orange-500 hover:bg-orange-600 text-sm normal-case',
                   socialButtonsBlockButton: 'border-gray-700 text-gray-300',
                   socialButtonsBlockButtonText: 'text-gray-300',
-                  footerActionLink: 'text-teal-500',
+                  footerActionLink: 'text-orange-500',
                   card: 'bg-black border-gray-800',
                   dividerLine: 'bg-gray-700',
                   dividerText: 'text-gray-400',
