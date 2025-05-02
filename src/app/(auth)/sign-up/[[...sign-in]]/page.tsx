@@ -12,26 +12,27 @@ export default function SignUpPage() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3
+        staggerChildren: 0.2,
+        delayChildren: 0.5
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
+      transition: { duration: 1.2, ease: [0.6, 0.01, -0.05, 0.95] }
     }
   };
 
   const blueRectVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, scaleX: 0.98 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.8, ease: "easeOut" }
+      scaleX: 1,
+      transition: { duration: 1.4, ease: "easeOut" }
     }
   };
 
@@ -41,39 +42,39 @@ export default function SignUpPage() {
       opacity: 1,
       scale: 1,
       rotate: 0,
-      transition: { duration: 0.8, ease: "easeOut", delay: 0.5 }
+      transition: { duration: 1.2, ease: [0.6, 0.01, -0.05, 0.95], delay: 0.7 }
     },
     hover: {
-      scale: 1.05,
-      rotate: 2,
-      transition: { duration: 0.3 }
+      scale: 1.08,
+      rotate: 3,
+      transition: { duration: 0.5, ease: "easeOut" }
     }
   };
 
   const floatingIconVariants = {
     hidden: { opacity: 0, y: 20, rotate: -5 },
     visible: { 
-      opacity: 0.5, 
+      opacity: 0.7, 
       y: 0, 
       rotate: 0,
       transition: { 
-        duration: 1, 
+        duration: 1.5, 
         ease: "easeOut", 
-        delay: 1.2 
+        delay: 1.5 
       }
     },
     floating: {
-      y: [0, -10, 0],
-      rotate: [0, 5, 0],
+      y: [0, -15, 0],
+      rotate: [0, 7, 0],
       transition: {
         y: {
-          duration: 3,
+          duration: 5,
           repeat: Infinity,
           repeatType: "mirror",
           ease: "easeInOut"
         },
         rotate: {
-          duration: 4,
+          duration: 6,
           repeat: Infinity,
           repeatType: "mirror",
           ease: "easeInOut"
@@ -82,80 +83,17 @@ export default function SignUpPage() {
     }
   };
 
+  const fadeInVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { duration: 1.5, ease: "easeOut", delay: 0.5 }
+    }
+  };
+
   return (
     <div className="flex h-screen">
-      {/* Left Column - Sign Up Form */}
-      <motion.div 
-        className="w-full md:w-2/5 p-8 md:p-12 flex flex-col justify-center bg-black text-white"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-md mx-auto w-full">
-          <motion.div 
-            className="flex items-center gap-4 mb-6"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <motion.div
-              whileHover="hover"
-              initial="hidden"
-              animate="visible"
-              variants={iconVariants}
-              className="text-white"
-            >
-              <Image 
-                src="/book.svg" 
-                alt="Book icon" 
-                width={60} 
-                height={60} 
-                className="object-contain filter brightness-0 invert"
-              />
-            </motion.div>
-            <h1 className="text-4xl font-bold text-white">Ivystar</h1>
-          </motion.div>
-          
-          <motion.p 
-            className="text-gray-400 mb-8 text-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            A mentor-student network, built on anonymity and trust.
-          </motion.p>
-          
-          {/* Clerk SignUp component */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-          >
-            <SignUp 
-              appearance={{
-                baseTheme: dark,
-                elements: {
-                  formButtonPrimary: 'bg-teal-600 text-sm normal-case',
-                  socialButtonsBlockButton: 'border-gray-700 text-gray-300',
-                  socialButtonsBlockButtonText: 'text-gray-300',
-                  footerActionLink: 'text-teal-500',
-                  card: 'bg-black border-gray-800',
-                  dividerLine: 'bg-gray-700',
-                  dividerText: 'text-gray-400',
-                  formFieldInput: 'bg-black text-white border-gray-700',
-                  formFieldLabel: 'text-gray-300',
-                  headerTitle: 'text-white',
-                  headerSubtitle: 'text-gray-400'
-                }
-              }}
-              signInUrl="/sign-in"
-              redirectUrl="/"
-            />
-          </motion.div>
-        </div>
-      </motion.div>
-      
-      {/* Right Column - Blue Rectangles */}
+      {/* Left Column - Blue Rectangles */}
       <div className="hidden md:block md:w-3/5 relative overflow-hidden">
         {/* Blue rectangle sections with animations */}
         <motion.div 
@@ -232,6 +170,77 @@ export default function SignUpPage() {
           </div>
         </motion.div>
       </div>
+      
+      {/* Right Column - Sign Up Form */}
+      <motion.div 
+        className="w-full md:w-2/5 p-8 md:p-12 flex flex-col justify-center bg-black text-white"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="max-w-md mx-auto w-full transform scale-90 origin-center">
+          <motion.div 
+            className="flex items-center gap-4 mb-6"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.4, ease: [0.6, 0.01, -0.05, 0.95] }}
+          >
+            <motion.div
+              whileHover="hover"
+              initial="hidden"
+              animate="visible"
+              variants={iconVariants}
+              className="text-white"
+            >
+              <Image 
+                src="/book.svg" 
+                alt="Book icon" 
+                width={60} 
+                height={60} 
+                className="object-contain filter brightness-0 invert"
+              />
+            </motion.div>
+            <h1 className="text-4xl font-bold text-white">Ivystar</h1>
+          </motion.div>
+          
+          <motion.p 
+            className="text-gray-400 mb-8 text-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.2, delay: 0.6 }}
+          >
+            A mentor-student network, built on anonymity and trust.
+          </motion.p>
+          
+          {/* Clerk SignUp component */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.3, delay: 0.8, ease: [0.6, 0.01, -0.05, 0.95] }}
+          >
+            <SignUp 
+              appearance={{
+                baseTheme: dark,
+                elements: {
+                  formButtonPrimary: 'bg-teal-600 text-sm normal-case',
+                  socialButtonsBlockButton: 'border-gray-700 text-gray-300',
+                  socialButtonsBlockButtonText: 'text-gray-300',
+                  footerActionLink: 'text-teal-500',
+                  card: 'bg-black border-gray-800',
+                  dividerLine: 'bg-gray-700',
+                  dividerText: 'text-gray-400',
+                  formFieldInput: 'bg-black text-white border-gray-700',
+                  formFieldLabel: 'text-gray-300',
+                  headerTitle: 'text-white',
+                  headerSubtitle: 'text-gray-400'
+                }
+              }}
+              signInUrl="/sign-in"
+              redirectUrl="/"
+            />
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 } 

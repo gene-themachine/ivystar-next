@@ -84,78 +84,7 @@ export default function SignInPage() {
 
   return (
     <div className="flex h-screen">
-      {/* Left Column - Sign In Form */}
-      <motion.div 
-        className="w-full md:w-2/5 p-8 md:p-12 flex flex-col justify-center bg-black text-white"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-md mx-auto w-full">
-          <motion.div 
-            className="flex items-center gap-4 mb-6"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <motion.div
-              whileHover="hover"
-              initial="hidden"
-              animate="visible"
-              variants={iconVariants}
-              className="text-white"
-            >
-              <Image 
-                src="/book.svg" 
-                alt="Book icon" 
-                width={60} 
-                height={60} 
-                className="object-contain filter brightness-0 invert"
-              />
-            </motion.div>
-            <h1 className="text-4xl font-bold text-white">Ivystar</h1>
-          </motion.div>
-          
-          <motion.p 
-            className="text-gray-400 mb-8 text-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            A mentor-student network, built on anonymity and trust.
-          </motion.p>
-          
-          {/* Clerk SignIn component */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-          >
-            <SignIn 
-              appearance={{
-                baseTheme: dark,
-                elements: {
-                  formButtonPrimary: 'bg-teal-600 text-sm normal-case',
-                  socialButtonsBlockButton: 'border-gray-700 text-gray-300',
-                  socialButtonsBlockButtonText: 'text-gray-300',
-                  footerActionLink: 'text-teal-500',
-                  card: 'bg-black border-gray-800',
-                  dividerLine: 'bg-gray-700',
-                  dividerText: 'text-gray-400',
-                  formFieldInput: 'bg-black text-white border-gray-700',
-                  formFieldLabel: 'text-gray-300',
-                  headerTitle: 'text-white',
-                  headerSubtitle: 'text-gray-400'
-                }
-              }}
-              signUpUrl="/sign-up"
-              redirectUrl="/"
-            />
-          </motion.div>
-        </div>
-      </motion.div>
-      
-      {/* Right Column - Blue Rectangles */}
+      {/* Left Column - Blue Rectangles */}
       <div className="hidden md:block md:w-3/5 relative overflow-hidden">
         {/* Blue rectangle sections with animations */}
         <motion.div 
@@ -232,6 +161,77 @@ export default function SignInPage() {
           </div>
         </motion.div>
       </div>
+      
+      {/* Right Column - Sign In Form */}
+      <motion.div 
+        className="w-full md:w-2/5 p-8 md:p-12 flex flex-col justify-center bg-black text-white"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="max-w-md mx-auto w-full">
+          <motion.div 
+            className="flex items-center gap-4 mb-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <motion.div
+              whileHover="hover"
+              initial="hidden"
+              animate="visible"
+              variants={iconVariants}
+              className="text-white"
+            >
+              <Image 
+                src="/book.svg" 
+                alt="Book icon" 
+                width={60} 
+                height={60} 
+                className="object-contain filter brightness-0 invert"
+              />
+            </motion.div>
+            <h1 className="text-4xl font-bold text-white">Ivystar</h1>
+          </motion.div>
+          
+          <motion.p 
+            className="text-gray-400 mb-8 text-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            A mentor-student network, built on anonymity and trust.
+          </motion.p>
+          
+          {/* Clerk SignIn component */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+          >
+            <SignIn 
+              appearance={{
+                baseTheme: dark,
+                elements: {
+                  formButtonPrimary: 'bg-teal-600 text-sm normal-case',
+                  socialButtonsBlockButton: 'border-gray-700 text-gray-300',
+                  socialButtonsBlockButtonText: 'text-gray-300',
+                  footerActionLink: 'text-teal-500',
+                  card: 'bg-black border-gray-800',
+                  dividerLine: 'bg-gray-700',
+                  dividerText: 'text-gray-400',
+                  formFieldInput: 'bg-black text-white border-gray-700',
+                  formFieldLabel: 'text-gray-300',
+                  headerTitle: 'text-white',
+                  headerSubtitle: 'text-gray-400'
+                }
+              }}
+              signUpUrl="/sign-up"
+              redirectUrl="/"
+            />
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 } 
