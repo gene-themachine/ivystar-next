@@ -13,12 +13,12 @@ export default function MainLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="flex h-full bg-white text-gray-900">
-      <aside className="w-[240px] bg-gray-100 border-r border-gray-200 shadow-md sticky top-0 h-full z-20 flex flex-col">
+    <div className="flex h-full bg-gray-900 text-white">
+      <aside className="w-[240px] bg-gray-900 border-r border-gray-800 shadow-md sticky top-0 h-full z-20 flex flex-col">
         <Sidebar />
       </aside>
 
-      <div className="flex flex-col flex-1 overflow-hidden bg-gray-50">
+      <div className="flex flex-col flex-1 overflow-hidden bg-gray-900">
         <Header>
           <SignedOut>
           </SignedOut>
@@ -26,7 +26,7 @@ export default function MainLayout({
           </SignedIn>
         </Header>
 
-        <main className="flex-1 overflow-y-auto bg-gray-50 relative p-6">
+        <main className="flex-1 overflow-y-auto bg-gray-950 relative">
           {children}
         </main>
       </div>

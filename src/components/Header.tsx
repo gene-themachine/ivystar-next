@@ -81,13 +81,13 @@ export default function Header({ children }: { children?: React.ReactNode }) {
   }, [currentPlaceholder, isDeleting, placeholderIndex, placeholders, cycleCount, animationComplete]);
 
   return (
-    <header className={`w-full flex justify-between items-center px-10 py-4 bg-white shadow-sm`}>
+    <header className={`w-full flex justify-between items-center px-10 py-4 bg-gray-900 shadow-md border-b border-gray-800`}>
       <div className="flex items-center flex-1 max-w-[1500px] mr-8">
         <nav className="flex items-center gap-8">
-          <a href="/how-it-works" className="text-gray-600 font-medium hover:text-gray-900 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-gray-400 after:bottom-[-6px] after:left-0 after:transition-width after:duration-200 hover:after:w-full">
+          <a href="/how-it-works" className="text-gray-300 font-medium hover:text-white relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-blue-400 after:bottom-[-6px] after:left-0 after:transition-width after:duration-200 hover:after:w-full">
             How it works
           </a>
-          <a href="/about" className="text-gray-600 font-medium hover:text-gray-900 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-gray-400 after:bottom-[-6px] after:left-0 after:transition-width after:duration-200 hover:after:w-full">
+          <a href="/about" className="text-gray-300 font-medium hover:text-white relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-blue-400 after:bottom-[-6px] after:left-0 after:transition-width after:duration-200 hover:after:w-full">
             About
           </a>
         </nav>
@@ -96,9 +96,9 @@ export default function Header({ children }: { children?: React.ReactNode }) {
           <input
             type="text"
             placeholder={currentPlaceholder}
-            className="w-full py-3 px-5 border border-gray-200 rounded-full bg-gray-50 text-gray-900 transition-all focus:outline-none focus:border-gray-400 focus:bg-white focus:shadow-[0_0_0_3px_rgba(156,163,175,0.1)]"
+            className="w-full py-3 px-5 border border-gray-700 rounded-full bg-gray-800 text-gray-200 transition-all focus:outline-none focus:border-gray-600 focus:bg-gray-800 focus:shadow-[0_0_0_3px_rgba(30,41,59,0.4)]"
           />
-          <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors">
+          <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -109,12 +109,12 @@ export default function Header({ children }: { children?: React.ReactNode }) {
       
       <div className="flex items-center gap-8">
         <div className="text-right">
-          <div className="text-gray-900 font-medium text-lg">Aspirational</div>
-          <div className="text-gray-500 text-xs font-semibold tracking-wide">HIGHER LEARNING</div>
+          <div className="text-white font-medium text-lg">Aspirational</div>
+          <div className="text-gray-400 text-xs font-semibold tracking-wide">HIGHER LEARNING</div>
         </div>
         
         {(isLoaded && !user) && (
-          <a href="/sign-up" className="bg-black text-white font-medium py-3 px-8 rounded-full transition-all hover:bg-gray-800 hover:transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-md">
+          <a href="/sign-up" className="bg-blue-500 text-white font-medium py-3 px-8 rounded-full transition-all hover:bg-blue-600 hover:transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-md">
             Get Started
           </a>
         )}

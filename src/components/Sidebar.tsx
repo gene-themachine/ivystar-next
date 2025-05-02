@@ -42,13 +42,13 @@ export default function Sidebar() {
 
   return (
     <motion.div 
-      className={`h-full p-5 flex flex-col bg-inherit backdrop-blur-sm`}
+      className={`h-full p-5 flex flex-col bg-gray-900 backdrop-blur-sm`}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <div className={`text-2xl font-bold mb-10 text-black flex items-center ${inter.variable}`}>
-        ivystar<span>.</span>
+      <div className={`text-2xl font-bold mb-10 text-white flex items-center ${inter.variable}`}>
+        ivystar<span className="text-blue-400">.</span>
       </div>
       
       <motion.div 
@@ -57,7 +57,7 @@ export default function Sidebar() {
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
       >
         <motion.button 
-          className="w-full flex items-center justify-center border border-gray-300 py-2 px-3 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-all duration-150 ease-out shadow-sm hover:shadow group"
+          className="w-full flex items-center justify-center border border-gray-700 py-2 px-3 rounded-lg text-gray-200 font-medium hover:bg-gray-800 transition-all duration-150 ease-out shadow-sm hover:shadow group"
           whileTap={{ scale: 0.97 }}
         >
           <svg 
@@ -128,9 +128,9 @@ export default function Sidebar() {
           >
             <Link 
               href={item.path} 
-              className={`flex items-center py-2 px-3 rounded-lg transition-all duration-200 ease-in-out text-gray-600 hover:bg-gray-200 hover:text-gray-900 group ${
+              className={`flex items-center py-2 px-3 rounded-lg transition-all duration-200 ease-in-out text-gray-400 hover:bg-gray-800 hover:text-gray-100 group ${
                 pathname === item.path 
-                  ? 'bg-gray-200 text-gray-900 border-l-4 border-black'
+                  ? 'bg-gray-800 text-white border-l-4 border-blue-500'
                   : 'border-l-4 border-transparent'
               }`}
             >
@@ -143,7 +143,7 @@ export default function Sidebar() {
                 {item.name}
               </span>
               {pathname === item.path && (
-                <div className="ml-auto h-2 w-2 rounded-full bg-black" />
+                <div className="ml-auto h-2 w-2 rounded-full bg-blue-400" />
               )}
             </Link>
           </motion.div>
@@ -151,14 +151,14 @@ export default function Sidebar() {
       </nav>
 
       {isLoaded && user ? (
-        <div className="mt-auto pt-4 border-t border-gray-200">
+        <div className="mt-auto pt-4 border-t border-gray-700">
           <div className="relative" ref={menuRef}>
             <div 
-              className="flex items-center p-2 rounded-lg hover:bg-gray-200 transition-all duration-150 ease-out cursor-pointer group"
+              className="flex items-center p-2 rounded-lg hover:bg-gray-800 transition-all duration-150 ease-out cursor-pointer group"
               onClick={() => router.push('/profile')}
             >
               <div 
-                className="w-8 h-8 rounded-full bg-gray-300 mr-2 flex items-center justify-center text-gray-600 overflow-hidden border-2 border-white shadow-sm"
+                className="w-8 h-8 rounded-full bg-gray-700 mr-2 flex items-center justify-center text-gray-300 overflow-hidden border-2 border-gray-700 shadow-sm"
               >
                 {user.imageUrl ? (
                   <img src={user.imageUrl} alt={user.username || "User"} className="w-full h-full object-cover" />
@@ -170,15 +170,15 @@ export default function Sidebar() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium text-gray-900 truncate">
+                <div className="text-xs font-medium text-gray-200 truncate">
                   {user.username || user.firstName || "User"}
                 </div>
-                <div className="text-xs text-gray-500 truncate">
+                <div className="text-xs text-gray-400 truncate">
                   {user.publicMetadata?.school ? `${user.publicMetadata.major} @ ${user.publicMetadata.school}` : "Ivystar Member"}
                 </div>
               </div>
               <motion.button
-                className="p-2 rounded-full hover:bg-gray-300 transition-colors duration-150 ease-out"
+                className="p-2 rounded-full hover:bg-gray-700 transition-colors duration-150 ease-out"
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent navigating to profile when clicking this button
                   setIsMenuOpen(!isMenuOpen);
@@ -186,7 +186,7 @@ export default function Sidebar() {
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.1 }}
               >
-                <svg className="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="1"></circle>
                   <circle cx="19" cy="12" r="1"></circle>
                   <circle cx="5" cy="12" r="1"></circle>
@@ -196,11 +196,11 @@ export default function Sidebar() {
             
             {isMenuOpen && (
               <div 
-                className="absolute right-0 bottom-12 w-32 bg-white rounded-lg shadow-lg overflow-hidden z-10 border border-gray-200"
+                className="absolute right-0 bottom-12 w-32 bg-gray-800 rounded-lg shadow-lg overflow-hidden z-10 border border-gray-700"
               >
                 <SignOutButton>
                   <button 
-                    className="flex items-center w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-gray-100 font-medium"
+                    className="flex items-center w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-gray-700 font-medium"
                     onClick={handleLogout}
                   >
                     <svg className="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
