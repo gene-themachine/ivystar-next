@@ -7,7 +7,8 @@ const isProtectedRoute = createRouteMatcher([
   '/saved(.*)',
   '/productivity-hub(.*)',
   '/messages(.*)',
-  '/events(.*)'
+  '/events(.*)',
+  '/profile(.*)'
 ]);
 
 // Alternative approach: match any route except the root
