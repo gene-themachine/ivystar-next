@@ -61,8 +61,8 @@ export default function Home() {
 
   return (
     <div className="bg-gray-950 min-h-screen">
-      <div className="container mx-auto max-w-5xl py-8 px-4">
-        <div className="space-y-8">
+      <div className="container mx-auto max-w-4xl py-8 px-4 sm:px-6">
+        <div className="space-y-6">
           {posts.map(post => (
             <Post key={post.id} {...post} />
           ))}
