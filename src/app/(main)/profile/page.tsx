@@ -30,7 +30,7 @@ export default function ProfilePage() {
     memberSince: "January 2023",
     profileImage: "/images/profile1.png",
     backgroundImage: "/images/dartmouth.png",
-    bio: "Hello everyone, this is a little blurb about myself and this page tells me what kind of tutor I am. It shows what kind of tutor I am and what I am capable of. This site is supposed to build some trust between me and potential students.",
+    bio: `I'm ${displayUsername}, a tutor passionate about helping students achieve their goals. With a strong background in my field, I provide personalized tutoring sessions to ensure each student receives the guidance they need to succeed.`,
   });
   
   // Update profile data when user data changes
