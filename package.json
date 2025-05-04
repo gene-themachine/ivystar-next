@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "build:optimized": "NODE_OPTIONS='--max-old-space-size=4096' next build",
-    "analyze": "ANALYZE=true next build",
+    "build:optimized": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" next build",
+    "analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next && rm -rf .turbo && next dev --turbopack"
@@ -28,6 +28,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^7.0.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

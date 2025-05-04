@@ -63,12 +63,6 @@ const nextConfig = {
     optimizeCss: true,
     scrollRestoration: true,
   },
-  
-  // Increase memory limit for builds if needed
-  env: {
-    // Allow 2GB memory for builds
-    NODE_OPTIONS: '--max_old_space_size=2048'
-  },
 };
 
 module.exports = nextConfig;

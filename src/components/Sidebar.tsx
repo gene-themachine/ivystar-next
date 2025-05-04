@@ -7,12 +7,22 @@ import { Inter } from 'next/font/google'
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useUser, SignOutButton } from '@clerk/nextjs'
+import { useUserStore } from '@/store/user-store'
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
 })
+
+// Define the type for unsafeMetadata
+interface UserMetadata {
+  username?: string;
+  role?: 'mentor' | 'student';
+  interests?: string[];
+  major?: string;
+  school?: string;
+}
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -21,6 +31,7 @@ export default function Sidebar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { user, isLoaded } = useUser()
+  const { username: storeUsername } = useUserStore()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -35,6 +46,12 @@ export default function Sidebar() {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
+
+  // Cast unsafeMetadata to our custom type
+  const metadata = user?.unsafeMetadata as UserMetadata | undefined
+
+  // Get username from different sources with fallbacks
+  const displayUsername = storeUsername || metadata?.username || user?.username || user?.firstName || "User"
 
   const handleLogout = () => {
     setIsMenuOpen(false)
@@ -161,7 +178,7 @@ export default function Sidebar() {
                 className="w-8 h-8 rounded-full bg-gray-700 mr-2 flex items-center justify-center text-gray-300 overflow-hidden border-2 border-gray-700 shadow-sm"
               >
                 {user.imageUrl ? (
-                  <img src={user.imageUrl} alt={user.username || "User"} className="w-full h-full object-cover" />
+                  <img src={user.imageUrl} alt={displayUsername as string} className="w-full h-full object-cover" />
                 ) : (
                   <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -171,10 +188,12 @@ export default function Sidebar() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium text-gray-200 truncate">
-                  {user.username || user.firstName || "User"}
+                  {displayUsername}
                 </div>
                 <div className="text-xs text-gray-400 truncate">
-                  {user.publicMetadata?.school ? `${user.publicMetadata.major} @ ${user.publicMetadata.school}` : "Ivystar Member"}
+                  {user.publicMetadata?.school ? 
+                    `${user.publicMetadata.major || 'Student'} @ ${user.publicMetadata.school}` 
+                    : "Ivystar Member"}
                 </div>
               </div>
               <motion.button

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { FaExternalLinkAlt } from "react-icons/fa";
@@ -9,13 +9,21 @@ import { ProfileHeader } from "@/components/mine";
 import Gallery from "@/components/profile/Gallery";
 // Import the proper ErrorBoundary component
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { useUserStore } from "@/store/user-store";
 
 export default function ProfilePage() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const { username: storeUsername } = useUserStore();
+  
+  // Get display username from different sources with fallbacks
+  const displayUsername = storeUsername || 
+                         (user?.unsafeMetadata as any)?.username || 
+                         user?.username || 
+                         "Arts_guy";
   
   // Initial profile data
   const [profileData, setProfileData] = useState({
-    username: user?.username || "Arts_guy",
+    username: displayUsername,
     isVerified: true,
     school: "Dartmouth College",
     hourlyRate: 50,
@@ -24,6 +32,16 @@ export default function ProfilePage() {
     backgroundImage: "/images/dartmouth.png",
     bio: "Hello everyone, this is a little blurb about myself and this page tells me what kind of tutor I am. It shows what kind of tutor I am and what I am capable of. This site is supposed to build some trust between me and potential students.",
   });
+  
+  // Update profile data when user data changes
+  useEffect(() => {
+    if (isLoaded && displayUsername) {
+      setProfileData(prev => ({
+        ...prev,
+        username: displayUsername
+      }));
+    }
+  }, [isLoaded, displayUsername]);
 
   // Mock portfolio data - keep the array smaller to reduce chunk size
   const [portfolioItems, setPortfolioItems] = useState([
