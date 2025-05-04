@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { ProfileHeader } from "@/components/mine";
+// Import the Gallery component directly instead of from UserInfo to avoid chunk loading issues
 import Gallery from "@/components/profile/Gallery";
-import { UserInfo } from '@/components/UserInfo';
+// Import the proper ErrorBoundary component
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -23,7 +25,7 @@ export default function ProfilePage() {
     bio: "Hello everyone, this is a little blurb about myself and this page tells me what kind of tutor I am. It shows what kind of tutor I am and what I am capable of. This site is supposed to build some trust between me and potential students.",
   });
 
-  // Mock portfolio data
+  // Mock portfolio data - keep the array smaller to reduce chunk size
   const [portfolioItems, setPortfolioItems] = useState([
     {
       src: '/images/screenshot1.png',
@@ -38,22 +40,6 @@ export default function ProfilePage() {
       thumbnail: '/images/screenshot2.png',
       title: 'Social Media App',
       description: 'Mobile app for creative content sharing and community building',
-      width: 1200,
-      height: 800
-    },
-    {
-      src: '/images/screenshot3.png',
-      thumbnail: '/images/screenshot3.png',
-      title: 'Pet Walker Service',
-      description: 'Website for connecting pet owners with local pet walkers',
-      width: 1200,
-      height: 800
-    },
-    {
-      src: '/images/screenshot4.png',
-      thumbnail: '/images/screenshot4.png',
-      title: 'Finance Dashboard',
-      description: 'Personal finance management app with intuitive interface',
       width: 1200,
       height: 800
     }
@@ -80,33 +66,35 @@ export default function ProfilePage() {
   return (
     <div className="bg-gray-950 text-white min-h-screen">
       <div className="container mx-auto max-w-4xl py-8 px-4 sm:px-6">
-        <div className="relative">
-          {/* Use the ProfileHeader component from mine folder */}
-          <ProfileHeader
-            username={profileData.username}
-            isVerified={profileData.isVerified}
-            school={profileData.school}
-            hourlyRate={profileData.hourlyRate}
-            timeOnPlatform={profileData.memberSince}
-            profileImage={profileData.profileImage}
-            backgroundImage={profileData.backgroundImage}
-            showMessageButton={false}
-          />
-          
-          {/* View Public Profile Button */}
-          <div className="absolute top-4 right-4 sm:top-auto sm:bottom-4 sm:right-4 z-10">
-            <Link 
-              href={`/profile/${profileData.username}`}
-              className="flex items-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition inline-block text-sm"
-            >
-              <span>View Public Profile</span>
-              <FaExternalLinkAlt className="ml-2 text-sm" />
-            </Link>
-            <p className="mt-1.5 text-gray-400 text-xs">
-              This is how others see your profile
-            </p>
+        <ErrorBoundary>
+          <div className="relative">
+            {/* Use the ProfileHeader component from mine folder */}
+            <ProfileHeader
+              username={profileData.username}
+              isVerified={profileData.isVerified}
+              school={profileData.school}
+              hourlyRate={profileData.hourlyRate}
+              timeOnPlatform={profileData.memberSince}
+              profileImage={profileData.profileImage}
+              backgroundImage={profileData.backgroundImage}
+              showMessageButton={false}
+            />
+            
+            {/* View Public Profile Button */}
+            <div className="absolute top-4 right-4 sm:top-auto sm:bottom-4 sm:right-4 z-10">
+              <Link 
+                href={`/profile/${profileData.username}`}
+                className="flex items-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition inline-block text-sm"
+              >
+                <span>View Public Profile</span>
+                <FaExternalLinkAlt className="ml-2 text-sm" />
+              </Link>
+              <p className="mt-1.5 text-gray-400 text-xs">
+                This is how others see your profile
+              </p>
+            </div>
           </div>
-        </div>
+        </ErrorBoundary>
 
         {/* Bio Section */}
         <div className="mt-8">
@@ -123,35 +111,49 @@ export default function ProfilePage() {
           </div>
         </div>
         
-        {/* Portfolio Gallery */}
-        <div className="mt-10">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">Work Samples</h2>
-            <button 
-              onClick={handleEditPortfolio}
-              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md font-medium transition text-sm"
-            >
-              Edit Portfolio
-            </button>
-          </div>
-          
-          {/* Using the Gallery component with proper styling */}
-          <Gallery 
-            images={portfolioItems}
-            title=""
-          />
-          
-          {/* Add Portfolio Item Button - matching the Gallery grid styling */}
-          <div className="mt-4 flex justify-center">
-            <div 
-              onClick={handleAddPortfolioItem}
-              className="cursor-pointer bg-gray-800 rounded-lg overflow-hidden border border-gray-700 flex items-center justify-center hover:opacity-90 transition-opacity"
-              style={{ width: '100%', maxWidth: '300px', height: '169px' }}
-            >
-              <span className="text-5xl text-gray-500">+</span>
+        {/* Portfolio Gallery - Wrap in proper error boundary */}
+        <ErrorBoundary
+          fallback={
+            <div className="mt-10 p-8 text-center bg-gray-800 rounded-lg">
+              <h3 className="text-xl mb-4">Unable to load gallery</h3>
+              <p className="mb-4">There was a problem loading the gallery component.</p>
+              <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded-md">
+                Retry
+              </button>
+            </div>
+          }
+        >
+          <div className="mt-10">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-white">Work Samples</h2>
+              <button 
+                onClick={handleEditPortfolio}
+                className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md font-medium transition text-sm"
+              >
+                Edit Portfolio
+              </button>
+            </div>
+            
+            <Suspense fallback={<div className="p-8 text-center">Loading gallery...</div>}>
+              {/* Using the Gallery component with proper styling */}
+              <Gallery 
+                images={portfolioItems}
+                title=""
+              />
+            </Suspense>
+            
+            {/* Add Portfolio Item Button - matching the Gallery grid styling */}
+            <div className="mt-4 flex justify-center">
+              <div 
+                onClick={handleAddPortfolioItem}
+                className="cursor-pointer bg-gray-800 rounded-lg overflow-hidden border border-gray-700 flex items-center justify-center hover:opacity-90 transition-opacity"
+                style={{ width: '100%', maxWidth: '300px', height: '169px' }}
+              >
+                <span className="text-5xl text-gray-500">+</span>
+              </div>
             </div>
           </div>
-        </div>
+        </ErrorBoundary>
         
         {/* Account Settings */}
         <div className="mt-12">
