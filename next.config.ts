@@ -40,17 +40,13 @@ const nextConfig = {
             test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)[\\/]/,
             priority: 20,
           },
-          // Group larger libraries together
-          lib: {
+          // Use a simpler approach for naming chunks to avoid null reference errors
+          vendor: {
             test: /[\\/]node_modules[\\/]/,
-            name(module: any) {
-              const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-              return `lib.${packageName.replace('@', '')}`;
-            },
+            name: 'vendor',
+            chunks: 'all',
             priority: 10,
-            minChunks: 1,
-            reuseExistingChunk: true,
-          },
+          }
         },
       };
     }
