@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useUserStore } from './user-store';
 
 interface OnboardingState {
   // Whether the user has completed onboarding
@@ -9,14 +10,36 @@ interface OnboardingState {
   
   // Function to reset onboarding status (for testing)
   resetOnboarding: () => void;
+  
+  // Function to check if user has completed onboarding based on their metadata
+  checkOnboardingStatus: () => boolean;
 }
 
-export const useOnboardingStore = create<OnboardingState>((set) => ({
+export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   isOnboardingComplete: false,
   
   completeOnboarding: () => set({ isOnboardingComplete: true }),
   
   resetOnboarding: () => set({ isOnboardingComplete: false }),
+  
+  // Check user store for required metadata
+  checkOnboardingStatus: () => {
+    const { username, role, interests, isLoaded } = useUserStore.getState();
+    
+    // Only consider onboarding complete if we've loaded user data and have required fields
+    const isComplete = isLoaded && 
+                      !!username && 
+                      !!role && 
+                      Array.isArray(interests) && 
+                      interests.length > 0;
+    
+    // Update state if needed
+    if (isComplete !== get().isOnboardingComplete) {
+      set({ isOnboardingComplete: isComplete });
+    }
+    
+    return isComplete;
+  }
 }));
 
 // In a real application, you might want to:

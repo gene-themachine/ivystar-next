@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
+import { useUserStore } from '@/store/user-store';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ type UserRole = 'mentor' | 'student' | null;
 const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const { user } = useUser();
+  const setUserData = useUserStore((state) => state.setUserData);
   
   const [step, setStep] = useState(1);
   const [userRole, setUserRole] = useState<UserRole>(null);
@@ -23,6 +25,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
   const [interests, setInterests] = useState<string[]>([]);
   const [customInterest, setCustomInterest] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sample interests - these can be adjusted or loaded from an API
   const interestOptions = [
@@ -94,35 +97,50 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
     try {
+      setIsSubmitting(true);
+      
       // Save data to Clerk metadata
       if (user) {
         await user.update({
-          // Use unsafeMetadata for non-public data or specific Clerk methods for publicMetadata
           unsafeMetadata: {
+            username: username,
             role: userRole,
-            username,
             interests
           }
         });
+        
+        // Also update our local store
+        setUserData({
+          username,
+          role: userRole,
+          interests
+        });
       }
       
-      // Close modal after successful submission
+      // First close the modal
       onClose();
       
-      // Reload the page or navigate as needed
-      router.refresh();
+      // Then refresh the page after a short delay to ensure state updates are processed
+      setTimeout(() => {
+        router.refresh();
+      }, 100);
+      
     } catch (error) {
       console.error('Error updating user metadata:', error);
       setErrors({ submit: 'Failed to save your information. Please try again.' });
+      setIsSubmitting(false);
     }
   };
 
+  // Don't render anything if not open
   if (!isOpen) return null;
 
   return (
     <motion.div 
-      className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -131,6 +149,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
         className="bg-gray-950 text-white rounded-xl max-w-2xl w-full mx-4 overflow-hidden border border-gray-800"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
       >
         {/* Header */}
@@ -171,202 +190,200 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
 
         {/* Step content */}
         <div className="px-6 py-6">
-          <AnimatePresence mode="wait">
-            {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-xl font-semibold mb-6">Are you looking to teach or learn?</h3>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <motion.div 
-                    className={`cursor-pointer rounded-lg p-6 text-center border transition-all ${
-                      userRole === 'mentor' 
-                        ? 'border-orange-500 bg-orange-500 bg-opacity-10' 
-                        : 'border-gray-700 hover:border-gray-600'
-                    }`}
-                    onClick={() => setUserRole('mentor')}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="flex justify-center mb-4">
-                      <div className="bg-orange-600 w-32 h-32 rounded-lg flex items-center justify-center">
-                        <Image 
-                          src="/mentor.svg"
-                          alt="Mentor icon" 
-                          width={80} 
-                          height={80}
-                          className="object-contain"
-                        />
-                      </div>
+          {step === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h3 className="text-xl font-semibold mb-6">Are you looking to teach or learn?</h3>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <motion.div 
+                  className={`cursor-pointer rounded-lg p-6 text-center border transition-all ${
+                    userRole === 'mentor' 
+                      ? 'border-orange-500 bg-orange-500 bg-opacity-10' 
+                      : 'border-gray-700 hover:border-gray-600'
+                  }`}
+                  onClick={() => setUserRole('mentor')}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-orange-600 w-32 h-32 rounded-lg flex items-center justify-center">
+                      <Image 
+                        src="/mentor.svg"
+                        alt="Mentor icon" 
+                        width={80} 
+                        height={80}
+                        className="object-contain"
+                      />
                     </div>
-                    <h4 className="text-xl font-bold">Mentor</h4>
-                  </motion.div>
-
-                  <motion.div 
-                    className={`cursor-pointer rounded-lg p-6 text-center border transition-all ${
-                      userRole === 'student' 
-                        ? 'border-blue-500 bg-blue-500 bg-opacity-10' 
-                        : 'border-gray-700 hover:border-gray-600'
-                    }`}
-                    onClick={() => setUserRole('student')}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="flex justify-center mb-4">
-                      <div className="bg-blue-600 w-32 h-32 rounded-lg flex items-center justify-center">
-                        <Image 
-                          src="/student.svg"
-                          alt="Student icon" 
-                          width={80} 
-                          height={80}
-                          className="object-contain"
-                        />
-                      </div>
-                    </div>
-                    <h4 className="text-xl font-bold">Student</h4>
-                  </motion.div>
-                </div>
-                {errors.role && (
-                  <p className="text-red-500 mt-4 text-center">{errors.role}</p>
-                )}
-              </motion.div>
-            )}
-
-            {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-xl font-semibold mb-6">Choose a username</h3>
-                <p className="text-gray-400 mb-4">
-                  This will be your public identity on Ivystar. You can change this later.
-                </p>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      id="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white focus:border-orange-500 focus:ring-orange-500 transition"
-                      placeholder="Enter a username"
-                    />
-                    {errors.username && (
-                      <p className="text-red-500 mt-1 text-sm">{errors.username}</p>
-                    )}
                   </div>
-                  
-                  <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
-                    <h4 className="text-sm font-medium text-gray-300 mb-2">
-                      Your profile as it will appear:
-                    </h4>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${userRole === 'mentor' ? 'bg-orange-600' : 'bg-blue-600'}`}>
-                        {username ? username.charAt(0).toUpperCase() : '?'}
-                      </div>
-                      <div>
-                        <p className="font-medium">{username || 'Username'}</p>
-                        <p className="text-sm text-gray-400">{userRole || 'Role'}</p>
-                      </div>
+                  <h4 className="text-xl font-bold">Mentor</h4>
+                </motion.div>
+
+                <motion.div 
+                  className={`cursor-pointer rounded-lg p-6 text-center border transition-all ${
+                    userRole === 'student' 
+                      ? 'border-blue-500 bg-blue-500 bg-opacity-10' 
+                      : 'border-gray-700 hover:border-gray-600'
+                  }`}
+                  onClick={() => setUserRole('student')}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-blue-600 w-32 h-32 rounded-lg flex items-center justify-center">
+                      <Image 
+                        src="/student.svg"
+                        alt="Student icon" 
+                        width={80} 
+                        height={80}
+                        className="object-contain"
+                      />
+                    </div>
+                  </div>
+                  <h4 className="text-xl font-bold">Student</h4>
+                </motion.div>
+              </div>
+              {errors.role && (
+                <p className="text-red-500 mt-4 text-center">{errors.role}</p>
+              )}
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h3 className="text-xl font-semibold mb-6">Choose a username</h3>
+              <p className="text-gray-400 mb-4">
+                This will be your public identity on Ivystar. You can change this later.
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white focus:border-orange-500 focus:ring-orange-500 transition"
+                    placeholder="Enter a username"
+                  />
+                  {errors.username && (
+                    <p className="text-red-500 mt-1 text-sm">{errors.username}</p>
+                  )}
+                </div>
+                
+                <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                  <h4 className="text-sm font-medium text-gray-300 mb-2">
+                    Your profile as it will appear:
+                  </h4>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${userRole === 'mentor' ? 'bg-orange-600' : 'bg-blue-600'}`}>
+                      {username ? username.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div>
+                      <p className="font-medium">{username || 'Username'}</p>
+                      <p className="text-sm text-gray-400">{userRole || 'Role'}</p>
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            )}
+              </div>
+            </motion.div>
+          )}
 
-            {step === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-xl font-semibold mb-6">What are you interested in?</h3>
-                <p className="text-gray-400 mb-4">
-                  Select all that apply. This helps us connect you with relevant content and people.
-                </p>
-                
-                <div className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    {interestOptions.map((interest) => (
-                      <motion.button
-                        key={interest}
-                        type="button"
-                        onClick={() => toggleInterest(interest)}
-                        className={`px-3 py-2 rounded-full text-sm font-medium transition ${
-                          interests.includes(interest)
-                            ? 'bg-orange-500 text-white'
-                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                        }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {interest}
-                      </motion.button>
-                    ))}
-                  </div>
-                  
-                  <div className="flex">
-                    <input
-                      type="text"
-                      value={customInterest}
-                      onChange={(e) => setCustomInterest(e.target.value)}
-                      className="flex-grow p-3 bg-gray-900 rounded-l-lg border border-gray-700 text-white focus:border-orange-500 focus:ring-orange-500 transition"
-                      placeholder="Add custom interest"
-                    />
-                    <button
+          {step === 3 && (
+            <motion.div
+              key="step3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h3 className="text-xl font-semibold mb-6">What are you interested in?</h3>
+              <p className="text-gray-400 mb-4">
+                Select all that apply. This helps us connect you with relevant content and people.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {interestOptions.map((interest) => (
+                    <motion.button
+                      key={interest}
                       type="button"
-                      onClick={addCustomInterest}
-                      className="bg-orange-500 text-white px-4 rounded-r-lg hover:bg-orange-600 transition"
+                      onClick={() => toggleInterest(interest)}
+                      className={`px-3 py-2 rounded-full text-sm font-medium transition ${
+                        interests.includes(interest)
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      Add
-                    </button>
-                  </div>
-                  
-                  {interests.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium text-gray-300 mb-2">
-                        Selected interests:
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {interests.map((interest) => (
-                          <div 
-                            key={interest}
-                            className="px-3 py-1 bg-gray-800 rounded-full text-sm font-medium flex items-center"
-                          >
-                            {interest}
-                            <button
-                              type="button"
-                              onClick={() => toggleInterest(interest)}
-                              className="ml-2 text-gray-400 hover:text-white"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {errors.interests && (
-                    <p className="text-red-500 mt-1 text-sm">{errors.interests}</p>
-                  )}
+                      {interest}
+                    </motion.button>
+                  ))}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={customInterest}
+                    onChange={(e) => setCustomInterest(e.target.value)}
+                    className="flex-grow p-3 bg-gray-900 rounded-l-lg border border-gray-700 text-white focus:border-orange-500 focus:ring-orange-500 transition"
+                    placeholder="Add custom interest"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomInterest}
+                    className="bg-orange-500 text-white px-4 rounded-r-lg hover:bg-orange-600 transition"
+                  >
+                    Add
+                  </button>
+                </div>
+                
+                {interests.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-gray-300 mb-2">
+                      Selected interests:
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {interests.map((interest) => (
+                        <div 
+                          key={interest}
+                          className="px-3 py-1 bg-gray-800 rounded-full text-sm font-medium flex items-center"
+                        >
+                          {interest}
+                          <button
+                            type="button"
+                            onClick={() => toggleInterest(interest)}
+                            className="ml-2 text-gray-400 hover:text-white"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {errors.interests && (
+                  <p className="text-red-500 mt-1 text-sm">{errors.interests}</p>
+                )}
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {/* Error message */}
@@ -394,9 +411,10 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
           <button
             type="button"
             onClick={nextStep}
-            className="px-5 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+            disabled={isSubmitting}
+            className="px-5 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {step < 3 ? 'Continue' : 'Complete Setup'}
+            {isSubmitting ? 'Saving...' : (step < 3 ? 'Continue' : 'Complete Setup')}
           </button>
         </div>
       </motion.div>

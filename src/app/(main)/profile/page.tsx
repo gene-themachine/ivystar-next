@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { ProfileHeader } from "@/components/mine";
 import Gallery from "@/components/profile/Gallery";
+import { UserInfo } from '@/components/UserInfo';
 
 export default function ProfilePage() {
   const { user } = useUser();
