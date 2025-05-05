@@ -21,7 +21,8 @@ export default function MainLayout({
   children: React.ReactNode
 }>) {
   const { user, isLoaded } = useUser();
-  const setUser = useUserStore((state) => state.setUser);
+  const setUserData = useUserStore((state) => state.setUserData);
+  const resetUser = useUserStore((state) => state.resetUser);
   const checkOnboardingStatus = useOnboardingStore((state) => state.checkOnboardingStatus);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -30,7 +31,21 @@ export default function MainLayout({
   useEffect(() => {
     if (isLoaded) {
       console.log(user);
-      setUser(user || null);
+      
+      if (user) {
+        // Extract relevant data from user
+        setUserData({
+          username: (user.unsafeMetadata?.username as string) || user.username || '',
+          role: (user.unsafeMetadata?.role as 'mentor' | 'student') || null,
+          interests: (user.unsafeMetadata?.interests as string[]) || [],
+          profilePhoto: (user.unsafeMetadata?.profilePhoto as string) || '',
+          projectPhoto: (user.unsafeMetadata?.projectPhoto as string) || '',
+          projectDescription: (user.unsafeMetadata?.projectDescription as string) || ''
+        });
+      } else {
+        // Reset user data if there's no user
+        resetUser();
+      }
       
       // Check if we need to show onboarding
       if (user) {
@@ -42,7 +57,7 @@ export default function MainLayout({
         }
       }
     }
-  }, [user, isLoaded, setUser, checkOnboardingStatus]);
+  }, [user, isLoaded, setUserData, resetUser, checkOnboardingStatus]);
   
   // Handle modal close with state management
   const handleCloseOnboarding = () => {

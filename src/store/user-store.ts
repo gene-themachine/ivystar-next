@@ -7,38 +7,67 @@ interface ClerkUser {
     username?: string | null;
     role?: 'mentor' | 'student' | null;
     interests?: string[];
+    college?: string | null;
+    gradeLevel?: string | null;
   };
 }
 
+type UserRole = 'mentor' | 'student' | null;
+
 interface UserState {
+  // General user data
   username: string | null;
-  role: 'mentor' | 'student' | null;
+  role: UserRole;
   interests: string[];
+  profilePhoto: string | null;
+  projectPhoto: string | null;
+  projectDescription: string | null;
+  college: string | null;
+  gradeLevel: string | null;
   isLoaded: boolean;
-  setUser: (user: ClerkUser | null) => void;
-  setUserData: (data: { username?: string; role?: 'mentor' | 'student' | null; interests?: string[] }) => void;
+  
+  // Action to set user data
+  setUserData: (userData: {
+    username?: string;
+    role?: UserRole;
+    interests?: string[];
+    profilePhoto?: string;
+    projectPhoto?: string;
+    projectDescription?: string;
+    college?: string;
+    gradeLevel?: string;
+  }) => void;
+  
+  // Action to reset user data
+  resetUser: () => void;
 }
 
 export const useUserStore = create<UserState>((set) => ({
   username: null,
   role: null,
   interests: [],
+  profilePhoto: null,
+  projectPhoto: null,
+  projectDescription: null,
+  college: null,
+  gradeLevel: null,
   isLoaded: false,
-  setUser: (user) => {
-    if (!user) {
-      set({ username: null, role: null, interests: [], isLoaded: true });
-      return;
-    }
-    
-    // First check unsafeMetadata.username, then fall back to user.username
-    const username = user.unsafeMetadata?.username || user.username || null;
-    
-    set({ 
-      username,
-      role: user.unsafeMetadata?.role || null,
-      interests: user.unsafeMetadata?.interests || [],
-      isLoaded: true
-    });
-  },
-  setUserData: (data) => set((state) => ({ ...state, ...data }))
+  
+  setUserData: (userData) => set((state) => ({
+    ...state,
+    ...userData,
+    isLoaded: true
+  })),
+  
+  resetUser: () => set({
+    username: null,
+    role: null,
+    interests: [],
+    profilePhoto: null,
+    projectPhoto: null,
+    projectDescription: null,
+    college: null,
+    gradeLevel: null,
+    isLoaded: false
+  })
 })); 

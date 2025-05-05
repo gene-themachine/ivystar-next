@@ -1,11 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { useUserStore } from '@/store/user-store';
+import { useUploadThing } from '@/lib/uploadthing';
+import Flow1 from './flow1';
+import Flow2 from './flow2';
+import Flow3 from './flow3';
+import Flow4 from './flow4';
+import Flow5 from './flow5';
+import Introduction from './Introduction';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -13,19 +20,39 @@ interface OnboardingModalProps {
 }
 
 type UserRole = 'mentor' | 'student' | null;
+type GradeLevel = string;
 
 const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const { user } = useUser();
   const setUserData = useUserStore((state) => state.setUserData);
+  const { startUpload } = useUploadThing("imageUploader");
   
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // Start at 0 for introduction
+  const [showIntroduction, setShowIntroduction] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [username, setUsername] = useState('');
+  const [college, setCollege] = useState('');
+  const [gradeLevel, setGradeLevel] = useState<GradeLevel>('');
   const [interests, setInterests] = useState<string[]>([]);
   const [customInterest, setCustomInterest] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState('/default-profile.jpg');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [projectPhoto, setProjectPhoto] = useState('/default-project.jpg');
+  const [projectDescription, setProjectDescription] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Determine which steps can be skipped
+  const canSkipCurrentStep = () => {
+    // Step 3 (interests) and Step 4 (photo) can be skipped
+    return step === 3 || step === 4;
+  };
+
+  // Skip to final preview step
+  const skipToPreview = () => {
+    setStep(5);
+  };
 
   // Sample interests - these can be adjusted or loaded from an API
   const interestOptions = [
@@ -40,6 +67,14 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
     'Humanities',
     'Social Sciences',
     'Biology'
+  ];
+
+  // Sample photos for profile picture selection
+  const profilePhotoOptions = [
+    '/profile-placeholder-1.jpg',
+    '/profile-placeholder-2.jpg',
+    '/profile-placeholder-3.jpg',
+    '/profile-placeholder-4.jpg'
   ];
 
   const toggleInterest = (interest: string) => {
@@ -57,6 +92,10 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
     }
   };
 
+  const selectProfilePhoto = (photo: string) => {
+    setProfilePhoto(photo);
+  };
+
   const validateStep = (): boolean => {
     const newErrors: Record<string, string> = {};
     
@@ -70,9 +109,18 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
       } else if (username.length < 3) {
         newErrors.username = 'Username must be at least 3 characters';
       }
+      
+      if (userRole === 'mentor' && college.trim() === '') {
+        newErrors.college = 'Please enter your college/university';
+      }
+      
+      if (!gradeLevel) {
+        newErrors.gradeLevel = 'Please select your education level';
+      }
     }
     
-    if (step === 3 && interests.length === 0) {
+    // For skippable steps, don't add errors
+    if (step === 3 && interests.length === 0 && !canSkipCurrentStep()) {
       newErrors.interests = 'Please select at least one interest';
     }
     
@@ -82,7 +130,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
 
   const nextStep = () => {
     if (validateStep()) {
-      if (step < 3) {
+      if (step < 5) {
         setStep(step + 1);
       } else {
         handleSubmit();
@@ -102,23 +150,61 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
     try {
       setIsSubmitting(true);
       
-      // Save data to Clerk metadata
+      // Upload the photo to UploadThing if a new one was selected
+      let finalProfilePhotoUrl = profilePhoto;
+      
+      if (photoFile) {
+        try {
+          const uploadResult = await startUpload([photoFile]);
+          if (uploadResult && uploadResult[0]) {
+            finalProfilePhotoUrl = uploadResult[0].url;
+          }
+        } catch (error) {
+          console.error('Error uploading photo:', error);
+          setErrors({ profilePhoto: 'Failed to upload photo. Please try again.' });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      // Create the user metadata object
+      const userMetadata: any = {
+        username: username,
+        role: userRole,
+        interests
+      };
+      
+      // Only add grade level if it's set
+      if (gradeLevel) {
+        userMetadata.gradeLevel = gradeLevel;
+      }
+      
+      // Only add college if user is a mentor and it's set
+      if (userRole === 'mentor' && college) {
+        userMetadata.college = college;
+      }
+      
+      // Only add profilePhoto to metadata if it's not the default photo
+      if (finalProfilePhotoUrl !== '/default-profile.jpg') {
+        userMetadata.profilePhoto = finalProfilePhotoUrl;
+      }
+      
+      // Update metadata in Clerk
       if (user) {
         await user.update({
-          unsafeMetadata: {
-            username: username,
-            role: userRole,
-            interests
-          }
-        });
-        
-        // Also update our local store
-        setUserData({
-          username,
-          role: userRole,
-          interests
+          unsafeMetadata: userMetadata
         });
       }
+      
+      // Also update our local store with all relevant info
+      setUserData({
+        username,
+        role: userRole,
+        interests,
+        profilePhoto: finalProfilePhotoUrl,
+        college: userRole === 'mentor' ? college : undefined,
+        gradeLevel
+      });
       
       // First close the modal
       onClose();
@@ -135,288 +221,201 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
     }
   };
 
+  const handleIntroductionComplete = () => {
+    setShowIntroduction(false);
+    setStep(1); // Move to flow1 after introduction
+  };
+
+  // Effect to set default grade level when role changes
+  useEffect(() => {
+    if (userRole === 'student') {
+      setGradeLevel('High School');
+      // Clear college field for students since we don't ask for it
+      setCollege('');
+    } else if (userRole === 'mentor') {
+      setGradeLevel('College Student');
+    }
+  }, [userRole]);
+
   // Don't render anything if not open
   if (!isOpen) return null;
 
   return (
     <motion.div 
-      className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.div 
-        className="bg-gray-950 text-white rounded-xl max-w-2xl w-full mx-4 overflow-hidden border border-gray-800"
+        className="bg-gray-950 text-white rounded-xl w-full max-w-3xl overflow-hidden border border-gray-800 max-h-[90vh]"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="bg-orange-500 rounded-full p-2">
-              <Image 
-                src="/target.svg" 
-                alt="Target icon" 
-                width={28} 
-                height={28} 
-                className="object-contain filter brightness-0 invert"
-              />
-            </div>
-            <h2 className="text-2xl font-bold">Complete Your Profile</h2>
-          </div>
-          <p className="text-gray-400 mt-2">
-            Let's set up your account so you can get the most out of Ivystar
-          </p>
-        </div>
-
-        {/* Step indicator */}
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className={`text-sm ${step >= 1 ? 'text-orange-500' : 'text-gray-500'}`}>Role</span>
-            <span className={`text-sm ${step >= 2 ? 'text-orange-500' : 'text-gray-500'}`}>Username</span>
-            <span className={`text-sm ${step >= 3 ? 'text-orange-500' : 'text-gray-500'}`}>Interests</span>
-          </div>
-          <div className="relative h-1 bg-gray-800 rounded-full">
-            <motion.div 
-              className="absolute h-full bg-orange-500 rounded-full"
-              initial={{ width: "0%" }}
-              animate={{ width: `${(step / 3) * 100}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-        </div>
-
-        {/* Step content */}
-        <div className="px-6 py-6">
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <h3 className="text-xl font-semibold mb-6">Are you looking to teach or learn?</h3>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <motion.div 
-                  className={`cursor-pointer rounded-lg p-6 text-center border transition-all ${
-                    userRole === 'mentor' 
-                      ? 'border-orange-500 bg-orange-500 bg-opacity-10' 
-                      : 'border-gray-700 hover:border-gray-600'
-                  }`}
-                  onClick={() => setUserRole('mentor')}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="flex justify-center mb-4">
-                    <div className="bg-orange-600 w-32 h-32 rounded-lg flex items-center justify-center">
-                      <Image 
-                        src="/mentor.svg"
-                        alt="Mentor icon" 
-                        width={80} 
-                        height={80}
-                        className="object-contain"
-                      />
-                    </div>
-                  </div>
-                  <h4 className="text-xl font-bold">Mentor</h4>
-                </motion.div>
-
-                <motion.div 
-                  className={`cursor-pointer rounded-lg p-6 text-center border transition-all ${
-                    userRole === 'student' 
-                      ? 'border-blue-500 bg-blue-500 bg-opacity-10' 
-                      : 'border-gray-700 hover:border-gray-600'
-                  }`}
-                  onClick={() => setUserRole('student')}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="flex justify-center mb-4">
-                    <div className="bg-blue-600 w-32 h-32 rounded-lg flex items-center justify-center">
-                      <Image 
-                        src="/student.svg"
-                        alt="Student icon" 
-                        width={80} 
-                        height={80}
-                        className="object-contain"
-                      />
-                    </div>
-                  </div>
-                  <h4 className="text-xl font-bold">Student</h4>
-                </motion.div>
-              </div>
-              {errors.role && (
-                <p className="text-red-500 mt-4 text-center">{errors.role}</p>
-              )}
-            </motion.div>
-          )}
-
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <h3 className="text-xl font-semibold mb-6">Choose a username</h3>
-              <p className="text-gray-400 mb-4">
-                This will be your public identity on Ivystar. You can change this later.
-              </p>
-              
-              <div className="space-y-4">
+        {/* Hide header and step indicator during introduction */}
+        {!showIntroduction && (
+          <>
+            {/* Header */}
+            <div className="p-5 border-b border-gray-800">
+              <div className="flex items-center gap-3">
+                <div className="bg-orange-500 rounded-full p-2">
+                  <Image 
+                    src="/target.svg" 
+                    alt="Target icon" 
+                    width={24} 
+                    height={24} 
+                    className="object-contain filter brightness-0 invert"
+                  />
+                </div>
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    id="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white focus:border-orange-500 focus:ring-orange-500 transition"
-                    placeholder="Enter a username"
-                  />
-                  {errors.username && (
-                    <p className="text-red-500 mt-1 text-sm">{errors.username}</p>
-                  )}
-                </div>
-                
-                <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
-                  <h4 className="text-sm font-medium text-gray-300 mb-2">
-                    Your profile as it will appear:
-                  </h4>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${userRole === 'mentor' ? 'bg-orange-600' : 'bg-blue-600'}`}>
-                      {username ? username.charAt(0).toUpperCase() : '?'}
-                    </div>
-                    <div>
-                      <p className="font-medium">{username || 'Username'}</p>
-                      <p className="text-sm text-gray-400">{userRole || 'Role'}</p>
-                    </div>
-                  </div>
+                  <h2 className="text-xl font-bold">Complete Your Profile</h2>
+                  <p className="text-gray-400 text-sm mt-1">
+                    Set up your account to get the most out of Ivystar
+                  </p>
                 </div>
               </div>
-            </motion.div>
-          )}
+            </div>
 
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <h3 className="text-xl font-semibold mb-6">What are you interested in?</h3>
-              <p className="text-gray-400 mb-4">
-                Select all that apply. This helps us connect you with relevant content and people.
-              </p>
-              
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {interestOptions.map((interest) => (
-                    <motion.button
-                      key={interest}
-                      type="button"
-                      onClick={() => toggleInterest(interest)}
-                      className={`px-3 py-2 rounded-full text-sm font-medium transition ${
-                        interests.includes(interest)
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                      }`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {interest}
-                    </motion.button>
-                  ))}
-                </div>
-                
-                <div className="flex">
-                  <input
-                    type="text"
-                    value={customInterest}
-                    onChange={(e) => setCustomInterest(e.target.value)}
-                    className="flex-grow p-3 bg-gray-900 rounded-l-lg border border-gray-700 text-white focus:border-orange-500 focus:ring-orange-500 transition"
-                    placeholder="Add custom interest"
-                  />
-                  <button
-                    type="button"
-                    onClick={addCustomInterest}
-                    className="bg-orange-500 text-white px-4 rounded-r-lg hover:bg-orange-600 transition"
-                  >
-                    Add
-                  </button>
-                </div>
-                
-                {interests.length > 0 && (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-300 mb-2">
-                      Selected interests:
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {interests.map((interest) => (
-                        <div 
-                          key={interest}
-                          className="px-3 py-1 bg-gray-800 rounded-full text-sm font-medium flex items-center"
-                        >
-                          {interest}
-                          <button
-                            type="button"
-                            onClick={() => toggleInterest(interest)}
-                            className="ml-2 text-gray-400 hover:text-white"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {errors.interests && (
-                  <p className="text-red-500 mt-1 text-sm">{errors.interests}</p>
-                )}
+            {/* Step indicator */}
+            <div className="px-5 py-3 border-b border-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <span className={`text-xs font-medium ${step >= 1 ? 'text-orange-500' : 'text-gray-500'}`}>Role</span>
+                <span className={`text-xs font-medium ${step >= 2 ? 'text-orange-500' : 'text-gray-500'}`}>Username</span>
+                <span className={`text-xs font-medium ${step >= 3 ? 'text-orange-500' : 'text-gray-500'}`}>Interests</span>
+                <span className={`text-xs font-medium ${step >= 4 ? 'text-orange-500' : 'text-gray-500'}`}>Photo</span>
+                <span className={`text-xs font-medium ${step >= 5 ? 'text-orange-500' : 'text-gray-500'}`}>Preview</span>
               </div>
-            </motion.div>
-          )}
+              <div className="relative h-1 bg-gray-800 rounded-full">
+                <motion.div 
+                  className="absolute h-full bg-orange-500 rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${(step / 5) * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Step content - with variable height */}
+        <div className={`${showIntroduction ? 'p-0' : 'p-5'} min-h-[400px] max-h-[calc(90vh-200px)] overflow-y-auto`}>
+          <AnimatePresence mode="wait">
+            {showIntroduction && (
+              <Introduction 
+                key="introduction"
+                onContinue={handleIntroductionComplete}
+              />
+            )}
+          
+            {!showIntroduction && step === 1 && (
+              <Flow1 
+                key="flow1"
+                userRole={userRole}
+                setUserRole={setUserRole}
+                errors={errors}
+              />
+            )}
+
+            {step === 2 && (
+              <Flow2 
+                key="flow2"
+                username={username}
+                setUsername={setUsername}
+                college={college}
+                setCollege={setCollege}
+                gradeLevel={gradeLevel}
+                setGradeLevel={setGradeLevel}
+                userRole={userRole}
+                errors={errors}
+              />
+            )}
+
+            {step === 3 && (
+              <Flow3 
+                key="flow3"
+                interests={interests}
+                toggleInterest={toggleInterest}
+                customInterest={customInterest}
+                setCustomInterest={setCustomInterest}
+                addCustomInterest={addCustomInterest}
+                errors={errors}
+                interestOptions={interestOptions}
+              />
+            )}
+          
+            {step === 4 && (
+              <Flow4 
+                key="flow4"
+                profilePhoto={profilePhoto}
+                selectProfilePhoto={setProfilePhoto}
+                errors={errors}
+                profilePhotoOptions={profilePhotoOptions}
+                setPhotoFile={setPhotoFile}
+              />
+            )}
+          
+            {step === 5 && (
+              <Flow5 
+                key="flow5"
+                username={username}
+                userRole={userRole}
+                interests={interests}
+                profilePhoto={profilePhoto}
+                college={college}
+                gradeLevel={gradeLevel}
+                errors={errors}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Error message */}
         {errors.submit && (
-          <div className="px-6 mb-4">
-            <p className="text-red-500">{errors.submit}</p>
+          <div className="px-5 mb-2">
+            <p className="text-red-500 text-center text-sm">{errors.submit}</p>
           </div>
         )}
 
-        {/* Footer with navigation buttons */}
-        <div className="px-6 py-4 border-t border-gray-800 flex justify-between">
-          <button
-            type="button"
-            onClick={prevStep}
-            className={`px-5 py-2 rounded-lg ${
-              step === 1 
-                ? 'text-gray-500 cursor-not-allowed' 
-                : 'text-white bg-gray-800 hover:bg-gray-700 transition'
-            }`}
-            disabled={step === 1}
-          >
-            Back
-          </button>
-          
-          <button
-            type="button"
-            onClick={nextStep}
-            disabled={isSubmitting}
-            className="px-5 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Saving...' : (step < 3 ? 'Continue' : 'Complete Setup')}
-          </button>
-        </div>
+        {/* Footer with navigation buttons - hide during introduction */}
+        {!showIntroduction && (
+          <div className="px-5 py-4 border-t border-gray-800 flex justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={prevStep}
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  step === 1 
+                    ? 'text-gray-500 cursor-not-allowed' 
+                    : 'text-white bg-gray-800 hover:bg-gray-700 transition'
+                }`}
+                disabled={step === 1}
+              >
+                Back
+              </button>
+              
+              {canSkipCurrentStep() && (
+                <button
+                  type="button"
+                  onClick={skipToPreview}
+                  className="text-gray-400 hover:text-gray-300 transition text-xs"
+                >
+                  Skip to preview
+                </button>
+              )}
+            </div>
+            
+            <button
+              type="button"
+              onClick={nextStep}
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            >
+              {isSubmitting ? 'Saving...' : (step < 5 ? 'Continue' : 'Complete')}
+            </button>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

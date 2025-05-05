@@ -1,0 +1,166 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  clerkId        String?   @unique
+  email          String    @unique
+  username       String    @unique
+  firstName      String?
+  lastName       String?
+  imageUrl       String?
+  role           Role      @default(STUDENT)
+  school         String?
+  major          String?
+  bio            String?   @db.Text
+  interests      String[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  posts          Post[]
+  comments       Comment[]
+  events         Event[]
+  savedPosts     SavedPost[]
+  mentorships    Mentorship[]   @relation("Mentor")
+  mentees        Mentorship[]   @relation("Mentee")
+  sentMessages   Message[]      @relation("Sender")
+  receivedMessages Message[]    @relation("Receiver")
+}
+
+enum Role {
+  STUDENT
+  MENTOR
+  ADMIN
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  published   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    String
+  comments    Comment[]
+  savedBy     SavedPost[]
+  tags        Tag[]
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    String
+  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId      String
+  parentComment Comment? @relation("CommentToComment", fields: [parentId], references: [id])
+  parentId    String?
+  childComments Comment[] @relation("CommentToComment")
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  posts     Post[]
+}
+
+model SavedPost {
+  id        String    @id @default(cuid())
+  savedAt   DateTime  @default(now())
+  
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post      @relation(fields: [postId], references: [id])
+  postId    String
+
+  @@unique([userId, postId])
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String    @db.Text
+  location    String?
+  startTime   DateTime
+  endTime     DateTime
+  isVirtual   Boolean   @default(false)
+  meetingLink String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  organizer   User      @relation(fields: [organizerId], references: [id])
+  organizerId String
+  attendees   Attendee[]
+}
+
+model Attendee {
+  id        String    @id @default(cuid())
+  status    AttendeeStatus @default(INTERESTED)
+  
+  // Relations
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId   String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@unique([eventId, userId])
+}
+
+enum AttendeeStatus {
+  INTERESTED
+  GOING
+  NOT_GOING
+}
+
+model Mentorship {
+  id          String    @id @default(cuid())
+  status      MentorshipStatus @default(PENDING)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  mentor      User      @relation("Mentor", fields: [mentorId], references: [id])
+  mentorId    String
+  mentee      User      @relation("Mentee", fields: [menteeId], references: [id])
+  menteeId    String
+
+  @@unique([mentorId, menteeId])
+}
+
+enum MentorshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Message {
+  id          String    @id @default(cuid())
+  content     String    @db.Text
+  read        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  sender      User      @relation("Sender", fields: [senderId], references: [id])
+  senderId    String
+  receiver    User      @relation("Receiver", fields: [receiverId], references: [id])
+  receiverId  String
+}

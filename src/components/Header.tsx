@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Inter } from 'next/font/google';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -12,6 +13,7 @@ const inter = Inter({
 });
 
 export default function Header({ children }: { children?: React.ReactNode }) {
+  const router = useRouter();
   const placeholders = [
     "I'm curious about...",
     "I need a CS mentor...",
@@ -24,6 +26,7 @@ export default function Header({ children }: { children?: React.ReactNode }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [cycleCount, setCycleCount] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
   const { user, isLoaded } = useUser();
   
   useEffect(() => {
@@ -80,6 +83,13 @@ export default function Header({ children }: { children?: React.ReactNode }) {
     return () => clearTimeout(timeout);
   }, [currentPlaceholder, isDeleting, placeholderIndex, placeholders, cycleCount, animationComplete]);
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchInput.trim()) {
+      router.push(`/search/${encodeURIComponent(searchInput.trim())}`);
+    }
+  };
+
   return (
     <header className={`w-full flex justify-between items-center px-10 py-4 bg-gray-900 shadow-md border-b border-gray-800`}>
       <div className="flex items-center flex-1 max-w-[1500px] mr-8">
@@ -92,19 +102,24 @@ export default function Header({ children }: { children?: React.ReactNode }) {
           </a>
         </nav>
         
-        <div className="relative flex-1 max-w-[500px] mx-8">
+        <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-[500px] mx-8">
           <input
             type="text"
             placeholder={currentPlaceholder}
             className="w-full py-3 px-5 border border-gray-700 rounded-full bg-gray-800 text-gray-200 transition-all focus:outline-none focus:border-gray-600 focus:bg-gray-800 focus:shadow-[0_0_0_3px_rgba(30,41,59,0.4)]"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
-          <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+          <button 
+            type="submit"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </button>
-        </div>
+        </form>
       </div>
       
       <div className="flex items-center gap-8">

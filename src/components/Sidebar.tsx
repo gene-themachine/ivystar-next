@@ -2,18 +2,13 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { Inter } from 'next/font/google'
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useUser, SignOutButton } from '@clerk/nextjs'
 import { useUserStore } from '@/store/user-store'
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-})
 
 // Define the type for unsafeMetadata
 interface UserMetadata {
@@ -22,7 +17,14 @@ interface UserMetadata {
   interests?: string[];
   major?: string;
   school?: string;
+  profilePhoto?: string;
 }
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -52,6 +54,9 @@ export default function Sidebar() {
 
   // Get username from different sources with fallbacks
   const displayUsername = storeUsername || metadata?.username || user?.username || user?.firstName || "User"
+  
+  // Get profile photo from metadata (uploaded to UploadThing) or fallback to Clerk's default
+  const profilePhotoUrl = metadata?.profilePhoto || user?.imageUrl
 
   const handleLogout = () => {
     setIsMenuOpen(false)
@@ -59,13 +64,24 @@ export default function Sidebar() {
 
   return (
     <motion.div 
-      className={`h-full p-5 flex flex-col bg-gray-900 backdrop-blur-sm`}
+      className={`h-full pt-0 px-5 pb-5 flex flex-col bg-gray-900 backdrop-blur-sm`}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <div className={`text-2xl font-bold mb-10 text-white flex items-center ${inter.variable}`}>
-        ivystar<span className="text-blue-400">.</span>
+      <div className="mt-[-30px] mb-2">
+        <Link href="/">
+          <div className="flex justify-center items-center">
+            <Image 
+              src="/ivystar-logo.png" 
+              alt="Ivystar Logo" 
+              width={300} 
+              height={150} 
+              priority
+              className="h-auto"
+            />
+          </div>
+        </Link>
       </div>
       
       <motion.div 
@@ -76,6 +92,7 @@ export default function Sidebar() {
         <motion.button 
           className="w-full flex items-center justify-center border border-gray-700 py-2 px-3 rounded-lg text-gray-200 font-medium hover:bg-gray-800 transition-all duration-150 ease-out shadow-sm hover:shadow group"
           whileTap={{ scale: 0.97 }}
+          onClick={() => router.push('/new-post')}
         >
           <svg 
             className="w-4 h-4 mr-2" 
@@ -177,8 +194,8 @@ export default function Sidebar() {
               <div 
                 className="w-8 h-8 rounded-full bg-gray-700 mr-2 flex items-center justify-center text-gray-300 overflow-hidden border-2 border-gray-700 shadow-sm"
               >
-                {user.imageUrl ? (
-                  <img src={user.imageUrl} alt={displayUsername as string} className="w-full h-full object-cover" />
+                {profilePhotoUrl ? (
+                  <img src={profilePhotoUrl} alt={displayUsername as string} className="w-full h-full object-cover" />
                 ) : (
                   <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>

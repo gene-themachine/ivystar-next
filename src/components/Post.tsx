@@ -2,25 +2,11 @@
 
 import React, { useState } from 'react';
 import { FaRegComment, FaRegHeart, FaHeart, FaRegBookmark, FaBookmark, FaCheck } from 'react-icons/fa';
+import { PostType } from '@/types';
+import Image from 'next/image';
 
-interface PostProps {
-  id: string;
-  author: string;
-  isVerified: boolean;
-  profileImage: string;
-  institution: string;
-  timeAgo: string;
-  community: string;
-  title: string;
-  content: string;
-  tags: string[];
-  likes: number;
-  comments: number;
-  isLiked: boolean;
-  isSaved: boolean;
-  hasMentorResponse: boolean;
+interface PostProps extends PostType {
   onPostClick?: (id: string) => void;
-  fieldOfStudy?: string;
 }
 
 const Post: React.FC<PostProps> = ({
@@ -38,7 +24,6 @@ const Post: React.FC<PostProps> = ({
   comments,
   isLiked,
   isSaved,
-  hasMentorResponse,
   onPostClick,
   fieldOfStudy
 }) => {
@@ -64,65 +49,78 @@ const Post: React.FC<PostProps> = ({
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl shadow-md border border-gray-700 p-8 transition-all hover:shadow-lg hover:border-gray-600 cursor-pointer" onClick={handlePostClick}>
-      <div className="flex items-start gap-3 mb-7">
-        <img src={profileImage} alt={author} className="w-12 h-12 rounded-full object-cover border-2 border-gray-700 shadow-md" />
+    <div 
+      className="bg-gray-900 rounded-xl shadow-md border border-gray-800 p-6 transition-all hover:shadow-lg hover:border-gray-700 cursor-pointer" 
+      onClick={handlePostClick}
+    >
+      <div className="flex items-start gap-4 mb-6">
+        <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0">
+          <Image 
+            src={profileImage} 
+            alt={author} 
+            width={56} 
+            height={56}
+            className="rounded-full object-cover w-full h-full border-2 border-gray-800"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/images/default-profile.png';
+            }}
+          />
+        </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className="font-semibold text-white">{author}</span>
-            {isVerified && <FaCheck size={14} color="#60A5FA" />}
+            {isVerified && <FaCheck size={18} className="text-orange-500" />}
           </div>
           <div className="text-sm text-gray-300">
             <div className="flex items-center gap-1">
               <span>{institution}</span>
-              {fieldOfStudy && <span className="font-medium text-gray-200">in {fieldOfStudy}</span>}
+              {fieldOfStudy && <span className="text-gray-400">• {fieldOfStudy}</span>}
             </div>
-            <span className="text-gray-400">{timeAgo}</span>
+            <span className="text-gray-500 text-xs">{timeAgo} • {community}</span>
           </div>
         </div>
       </div>
       
-      <div className="mb-6">
+      <div className="mb-5">
         <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
-        <p className="text-gray-300 leading-relaxed mb-4">{content}</p>
+        <p className="text-gray-300 leading-relaxed mb-4 line-clamp-3">{content}</p>
         
         {tags && tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {tags.map((tag, index) => (
-              <span key={index} className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 bg-gray-800 text-gray-300 rounded-full text-xs">
                 #{tag}
               </span>
             ))}
           </div>
         )}
-
-        {hasMentorResponse && (
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-700 text-blue-400 rounded-full text-sm font-medium">
-            <span>🎓</span>
-            <span>Mentor Response</span>
-          </div>
-        )}
       </div>
       
-      <div className="flex items-center gap-4 pt-4 border-t border-gray-700">
+      <div className="flex items-center gap-4 pt-4 border-t border-gray-800">
         <button 
-          className={`flex items-center gap-2 text-gray-300 hover:text-white transition-colors ${liked ? 'text-red-400' : ''}`}
+          className={`flex items-center gap-2 text-gray-400 hover:text-orange-500 transition-colors ${liked ? 'text-orange-500' : ''}`}
           onClick={handleLikeClick}
+          aria-label="Like post"
         >
-          {liked ? <FaHeart size={16} color="#F87171" /> : <FaRegHeart size={16} />}
+          {liked ? <FaHeart size={20} /> : <FaRegHeart size={20} />}
           <span>{likeCount}</span>
         </button>
         
-        <button className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
-          <FaRegComment size={16} />
+        <button 
+          className="flex items-center gap-2 text-gray-400 hover:text-orange-500 transition-colors"
+          aria-label="Comment on post"
+        >
+          <FaRegComment size={20} />
           <span>{comments}</span>
         </button>
         
         <button 
-          className={`ml-auto text-gray-300 hover:text-white transition-colors ${saved ? 'text-blue-400' : ''}`}
+          className={`ml-auto text-gray-400 hover:text-orange-500 transition-colors ${saved ? 'text-orange-500' : ''}`}
           onClick={handleSaveClick}
+          aria-label={saved ? "Unsave post" : "Save post"}
         >
-          {saved ? <FaBookmark size={16} color="#60A5FA" /> : <FaRegBookmark size={16} />}
+          {saved ? <FaBookmark size={20} /> : <FaRegBookmark size={20} />}
         </button>
       </div>
     </div>

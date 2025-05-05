@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import Post from '@/components/Post';
 import Mentor from '@/components/mentor/mentor';
+import { PostType } from '@/types';
 
 export default function Saved() {
-  const [activeTab, setActiveTab] = useState('Mentors');
+  const [activeTab, setActiveTab] = useState('Posts');
   
   // Sample post data
-  const posts = [
+  const [savedPosts, setSavedPosts] = useState<PostType[]>([
     {
       id: '1',
       author: 'study_master42',
@@ -24,7 +25,6 @@ export default function Saved() {
       comments: 12,
       isLiked: false,
       isSaved: true,
-      hasMentorResponse: true,
       fieldOfStudy: 'Computer Science'
     },
     {
@@ -42,7 +42,6 @@ export default function Saved() {
       comments: 24,
       isLiked: true,
       isSaved: true,
-      hasMentorResponse: false,
       fieldOfStudy: 'Biology'
     },
     {
@@ -60,10 +59,9 @@ export default function Saved() {
       comments: 43,
       isLiked: false,
       isSaved: true,
-      hasMentorResponse: true,
       fieldOfStudy: 'English Literature'
     }
-  ];
+  ]);
 
   // Sample saved mentors data using same format as find-your-mentor page
   const mentors = [
@@ -133,11 +131,21 @@ export default function Saved() {
     }
   ];
 
+  const handlePostClick = (id: string) => {
+    console.log(`Post ${id} clicked`);
+    // Navigate to post detail page in a real app
+  };
+
   return (
     <div className="bg-gray-950 min-h-screen">
       <div className="container mx-auto max-w-4xl py-8 px-4 sm:px-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-white mb-2">Saved Items</h1>
+          <p className="text-gray-400">Your collection of saved content</p>
+        </div>
+        
         {/* Tab Navigation */}
-        <div className="flex border-b border-gray-700 mb-6">
+        <div className="flex border-b border-gray-800 mb-6">
           <button
             className={`py-3 px-6 font-medium text-sm ${activeTab === 'Posts' 
               ? 'text-white border-b-2 border-orange-500' 
@@ -158,28 +166,50 @@ export default function Saved() {
 
         {/* Tab Content */}
         {activeTab === 'Posts' && (
-          <div className="space-y-6">
-            {posts.map(post => (
-              <Post key={post.id} {...post} />
-            ))}
-          </div>
+          <>
+            {savedPosts.length > 0 ? (
+              <div className="space-y-6">
+                {savedPosts.map(post => (
+                  <Post key={post.id} {...post} onPostClick={handlePostClick} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-gray-400 mb-4">You haven't saved any posts yet.</p>
+                <button className="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded">
+                  Browse Posts
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {activeTab === 'Mentors' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {mentors.map((mentor, index) => (
-              <Mentor
-                key={index}
-                username={mentor.username}
-                school={mentor.school}
-                hourlyRate={mentor.hourlyRate}
-                quote={mentor.quote}
-                tags={mentor.tags}
-                profileImage={mentor.profileImage}
-                portfolio={mentor.portfolio}
-              />
-            ))}
-          </div>
+          <>
+            {mentors.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {mentors.map((mentor, index) => (
+                  <Mentor
+                    key={index}
+                    username={mentor.username}
+                    school={mentor.school}
+                    hourlyRate={mentor.hourlyRate}
+                    quote={mentor.quote}
+                    tags={mentor.tags}
+                    profileImage={mentor.profileImage}
+                    portfolio={mentor.portfolio}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-gray-400 mb-4">You haven't saved any mentors yet.</p>
+                <button className="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded">
+                  Find Mentors
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

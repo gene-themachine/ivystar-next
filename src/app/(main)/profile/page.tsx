@@ -1,47 +1,112 @@
 'use client';
 
-import { useState, lazy, Suspense, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
-import { FaExternalLinkAlt } from "react-icons/fa";
-import { ProfileHeader } from "@/components/mine";
-// Import the Gallery component directly instead of from UserInfo to avoid chunk loading issues
-import Gallery from "@/components/profile/Gallery";
-// Import the proper ErrorBoundary component
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useUserStore } from "@/store/user-store";
+import { useUploadThing } from "@/lib/uploadthing";
+import { 
+  ProfileHeader, 
+  ProfileBioSection, 
+  ProfileAccountSettings, 
+  ProfilePortfolio,
+  ProfileActions
+} from "@/components/mine";
+
+// Define the type for unsafeMetadata
+interface UserMetadata {
+  username?: string;
+  role?: 'mentor' | 'student';
+  interests?: string[];
+  profilePhoto?: string;
+  backgroundPhoto?: string;
+  college?: string;
+  bio?: string;
+  gradeLevel?: string;
+}
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
   const { username: storeUsername } = useUserStore();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const backgroundInputRef = useRef<HTMLInputElement>(null) as React.RefObject<HTMLInputElement>;
+  const { startUpload } = useUploadThing("imageUploader");
   
   // Get display username from different sources with fallbacks
   const displayUsername = storeUsername || 
                          (user?.unsafeMetadata as any)?.username || 
                          user?.username || 
-                         "Arts_guy";
+                         "Default User";
+  
+  // Get metadata with fallbacks
+  const metadata = user?.unsafeMetadata as UserMetadata | undefined;
+  const profilePhoto = metadata?.profilePhoto || user?.imageUrl || "/default-profile.jpg";
+  const backgroundPhoto = metadata?.backgroundPhoto || "/images/bg.png";
+  const college = metadata?.college || "Default University";
+  const defaultBio = `I'm a member of the Ivystar community passionate about education and collaboration.`;
+  const bio = metadata?.bio || defaultBio;
+  const userRole = metadata?.role || 'student';
+  const gradeLevel = metadata?.gradeLevel || 'Freshman';
   
   // Initial profile data
   const [profileData, setProfileData] = useState({
     username: displayUsername,
     isVerified: true,
-    school: "Dartmouth College",
+    school: college,
     hourlyRate: 50,
     memberSince: "January 2023",
-    profileImage: "/images/profile1.png",
-    backgroundImage: "/images/dartmouth.png",
-    bio: `I'm ${displayUsername}, a tutor passionate about helping students achieve their goals. With a strong background in my field, I provide personalized tutoring sessions to ensure each student receives the guidance they need to succeed.`,
+    profileImage: profilePhoto,
+    backgroundImage: backgroundPhoto,
+    bio: bio,
+    role: userRole,
+    gradeLevel: gradeLevel,
   });
+  
+  // Form state for editable fields
+  const [editForm, setEditForm] = useState({
+    school: college,
+    bio: bio,
+    backgroundImage: backgroundPhoto,
+  });
+  
+  // Background file to upload
+  const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
   
   // Update profile data when user data changes
   useEffect(() => {
-    if (isLoaded && displayUsername) {
+    if (isLoaded) {
+      // Get the latest metadata
+      const metadata = user?.unsafeMetadata as UserMetadata | undefined;
+      const profilePhoto = metadata?.profilePhoto || user?.imageUrl || "/images/default-profile.png";
+      const backgroundPhoto = metadata?.backgroundPhoto || "/images/bg.png";
+      const college = metadata?.college || "Default University";
+      const defaultBio = `I'm a member of the Ivystar community passionate about education and collaboration.`;
+      const bio = metadata?.bio || defaultBio;
+      const userRole = metadata?.role || 'student';
+      const gradeLevel = metadata?.gradeLevel || 'Freshman';
+      
       setProfileData(prev => ({
         ...prev,
-        username: displayUsername
+        username: displayUsername,
+        profileImage: profilePhoto,
+        backgroundImage: backgroundPhoto,
+        school: college,
+        bio: bio,
+        role: userRole,
+        gradeLevel: gradeLevel
       }));
+      
+      setEditForm({
+        school: college,
+        bio: bio,
+        backgroundImage: backgroundPhoto
+      });
+      
+      setIsInitialized(true);
     }
-  }, [isLoaded, displayUsername]);
+  }, [isLoaded, displayUsername, user?.unsafeMetadata, user?.imageUrl]);
 
   // Mock portfolio data - keep the array smaller to reduce chunk size
   const [portfolioItems, setPortfolioItems] = useState([
@@ -63,10 +128,125 @@ export default function ProfilePage() {
     }
   ]);
 
-  // Handle edit profile
+  const handleBackgroundChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBackgroundFile(file);
+      // Create a temporary preview URL
+      const url = URL.createObjectURL(file);
+      setEditForm(prev => ({ ...prev, backgroundImage: url }));
+    }
+  };
+
+  const triggerBackgroundInput = () => {
+    backgroundInputRef.current?.click();
+  };
+
   const handleEditProfile = () => {
-    // Your edit profile logic here
-    console.log("Edit profile");
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    // Reset form to current values
+    setEditForm({
+      school: profileData.school,
+      bio: profileData.bio,
+      backgroundImage: profileData.backgroundImage
+    });
+    setBackgroundFile(null);
+    setIsEditing(false);
+  };
+  
+  const handleFormChange = (field: 'bio' | 'school', value: string) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    try {
+      setIsUploading(true);
+      let finalBackgroundUrl = editForm.backgroundImage;
+      
+      // Check if we're replacing the background image
+      if (backgroundFile) {
+        // Upload new background image
+        const uploadResult = await startUpload([backgroundFile]);
+        if (uploadResult && uploadResult[0]) {
+          finalBackgroundUrl = uploadResult[0].url;
+          
+          // Delete the old background image if it's from uploadthing
+          if (metadata?.backgroundPhoto && (
+              metadata.backgroundPhoto.includes('uploadthing') || 
+              metadata.backgroundPhoto.includes('utfs.io')
+          )) {
+            try {
+              let fileKey;
+              
+              // Try to extract the file key from the URL
+              try {
+                const url = new URL(metadata.backgroundPhoto);
+                const pathParts = url.pathname.split('/');
+                fileKey = pathParts[pathParts.length - 1];
+              } catch (e) {
+                // If URL parsing fails, try simple extraction
+                const urlParts = metadata.backgroundPhoto.split('/');
+                fileKey = urlParts[urlParts.length - 1];
+              }
+              
+              if (!fileKey) {
+                console.error("Could not extract file key from URL:", metadata.backgroundPhoto);
+                return;
+              }
+              
+              console.log("Deleting file with key:", fileKey);
+              
+              // Call the API to delete the file
+              const response = await fetch('/api/delete-file', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                  fileKey,
+                  fileUrl: metadata.backgroundPhoto  // Pass the full URL as well
+                }),
+              });
+              
+              const result = await response.json();
+              console.log("File deletion result:", result);
+              
+            } catch (error) {
+              console.error("Error deleting old background:", error);
+            }
+          }
+        }
+      }
+      
+      // Update metadata in Clerk
+      await user.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          backgroundPhoto: finalBackgroundUrl,
+          college: editForm.school,
+          bio: editForm.bio
+        }
+      });
+      
+      // Update local state
+      setProfileData(prev => ({
+        ...prev,
+        backgroundImage: finalBackgroundUrl,
+        school: editForm.school,
+        bio: editForm.bio
+      }));
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Handle edit portfolio
@@ -80,143 +260,75 @@ export default function ProfilePage() {
     // Your add portfolio item logic here
     console.log("Add portfolio item");
   };
+
+  // Loading state while data is being initialized
+  if (!isInitialized) {
+    return (
+      <div className="bg-gray-950 text-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin mr-3 h-8 w-8 border-t-2 border-b-2 border-orange-500 rounded-full"></div>
+          <p className="mt-2 text-gray-400">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="bg-gray-950 text-white min-h-screen">
       <div className="container mx-auto max-w-4xl py-8 px-4 sm:px-6">
         <ErrorBoundary>
           <div className="relative">
-            {/* Use the ProfileHeader component from mine folder */}
+            {/* Profile Header */}
             <ProfileHeader
               username={profileData.username}
               isVerified={profileData.isVerified}
-              school={profileData.school}
+              school={isEditing ? editForm.school : profileData.school}
               hourlyRate={profileData.hourlyRate}
               timeOnPlatform={profileData.memberSince}
               profileImage={profileData.profileImage}
-              backgroundImage={profileData.backgroundImage}
+              backgroundImage={isEditing ? editForm.backgroundImage : profileData.backgroundImage}
               showMessageButton={false}
+              role={profileData.role}
+              gradeLevel={profileData.gradeLevel}
             />
             
-            {/* View Public Profile Button */}
-            <div className="absolute top-4 right-4 sm:top-auto sm:bottom-4 sm:right-4 z-10">
-              <Link 
-                href={`/profile/${profileData.username}`}
-                className="flex items-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition inline-block text-sm"
-              >
-                <span>View Public Profile</span>
-                <FaExternalLinkAlt className="ml-2 text-sm" />
-              </Link>
-              <p className="mt-1.5 text-gray-400 text-xs">
-                This is how others see your profile
-              </p>
-            </div>
+            {/* Profile Actions (edit/save buttons, background upload) */}
+            <ProfileActions
+              isEditing={isEditing}
+              isUploading={isUploading}
+              username={profileData.username}
+              backgroundInputRef={backgroundInputRef}
+              onBackgroundChange={handleBackgroundChange}
+              onTriggerBackgroundInput={triggerBackgroundInput}
+              onCancelEdit={handleCancelEdit}
+              onSaveProfile={handleSaveProfile}
+            />
           </div>
         </ErrorBoundary>
 
         {/* Bio Section */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">About</h2>
-          <div className="bg-gray-800 rounded-xl p-5 border border-gray-700 relative">
-            <div className="absolute top-6 left-0 w-4 h-4 bg-gray-800 transform -translate-x-1/2 rotate-45"></div>
-            <p className="text-gray-300">{profileData.bio}</p>
-            <button 
-              onClick={handleEditProfile}
-              className="mt-4 bg-[#2a3441] hover:bg-gray-600 text-white px-3 py-1.5 rounded text-xs"
-            >
-              Edit Bio
-            </button>
-          </div>
-        </div>
+        <ProfileBioSection
+          bio={profileData.bio}
+          isEditing={isEditing}
+          school={profileData.school}
+          editForm={editForm}
+          onEditClick={handleEditProfile}
+          onFormChange={handleFormChange}
+          role={profileData.role}
+        />
         
-        {/* Portfolio Gallery - Wrap in proper error boundary */}
-        <ErrorBoundary
-          fallback={
-            <div className="mt-10 p-8 text-center bg-gray-800 rounded-lg">
-              <h3 className="text-xl mb-4">Unable to load gallery</h3>
-              <p className="mb-4">There was a problem loading the gallery component.</p>
-              <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded-md">
-                Retry
-              </button>
-            </div>
-          }
-        >
-          <div className="mt-10">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Work Samples</h2>
-              <button 
-                onClick={handleEditPortfolio}
-                className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md font-medium transition text-sm"
-              >
-                Edit Portfolio
-              </button>
-            </div>
-            
-            <Suspense fallback={<div className="p-8 text-center">Loading gallery...</div>}>
-              {/* Using the Gallery component with proper styling */}
-              <Gallery 
-                images={portfolioItems}
-                title=""
-              />
-            </Suspense>
-            
-            {/* Add Portfolio Item Button - matching the Gallery grid styling */}
-            <div className="mt-4 flex justify-center">
-              <div 
-                onClick={handleAddPortfolioItem}
-                className="cursor-pointer bg-gray-800 rounded-lg overflow-hidden border border-gray-700 flex items-center justify-center hover:opacity-90 transition-opacity"
-                style={{ width: '100%', maxWidth: '300px', height: '169px' }}
-              >
-                <span className="text-5xl text-gray-500">+</span>
-              </div>
-            </div>
-          </div>
-        </ErrorBoundary>
+        {/* Portfolio Gallery */}
+        <ProfilePortfolio
+          portfolioItems={portfolioItems}
+          onEditPortfolio={handleEditPortfolio}
+          onAddPortfolioItem={handleAddPortfolioItem}
+        />
         
         {/* Account Settings */}
-        <div className="mt-12">
-          <h2 className="text-xl font-bold text-white mb-6">Account Settings</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="p-6 bg-[#1a212c] rounded-xl border border-gray-800">
-              <h3 className="text-base font-semibold text-white mb-2">Personal Information</h3>
-              <p className="text-gray-400 mb-4 text-sm">Update your personal details and profile picture</p>
-              <button 
-                onClick={handleEditProfile}
-                className="bg-[#2a3441] hover:bg-gray-600 text-white px-4 py-2 rounded-md transition text-sm"
-              >
-                Edit Details
-              </button>
-            </div>
-            
-            <div className="p-6 bg-[#1a212c] rounded-xl border border-gray-800">
-              <h3 className="text-base font-semibold text-white mb-2">Portfolio</h3>
-              <p className="text-gray-400 mb-4 text-sm">Manage your work samples and portfolio items</p>
-              <button 
-                onClick={handleEditPortfolio}
-                className="bg-[#2a3441] hover:bg-gray-600 text-white px-4 py-2 rounded-md transition text-sm"
-              >
-                Edit Portfolio
-              </button>
-            </div>
-            
-            <div className="p-6 bg-[#1a212c] rounded-xl border border-gray-800">
-              <h3 className="text-base font-semibold text-white mb-2">Preferences</h3>
-              <p className="text-gray-400 mb-4 text-sm">Set your notification and privacy preferences</p>
-              <button className="bg-[#2a3441] hover:bg-gray-600 text-white px-4 py-2 rounded-md transition text-sm">
-                Manage Preferences
-              </button>
-            </div>
-            
-            <div className="p-6 bg-[#1a212c] rounded-xl border border-gray-800">
-              <h3 className="text-base font-semibold text-white mb-2">Account Security</h3>
-              <p className="text-gray-400 mb-4 text-sm">Update your password and security settings</p>
-              <button className="bg-[#2a3441] hover:bg-gray-600 text-white px-4 py-2 rounded-md transition text-sm">
-                Security Settings
-              </button>
-            </div>
-          </div>
-        </div>
+        <ProfileAccountSettings
+          onEditProfile={handleEditProfile}
+          onEditPortfolio={handleEditPortfolio}
+        />
       </div>
     </div>
   );

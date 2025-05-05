@@ -1,8 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import Post from '@/components/Post';
+import { PostType } from '@/types';
 
 export default function Home() {
   // Sample post data
-  const posts = [
+  const [posts, setPosts] = useState<PostType[]>([
     {
       id: '1',
       author: 'study_master42',
@@ -18,7 +22,6 @@ export default function Home() {
       comments: 12,
       isLiked: false,
       isSaved: false,
-      hasMentorResponse: true,
       fieldOfStudy: 'Computer Science'
     },
     {
@@ -36,7 +39,6 @@ export default function Home() {
       comments: 24,
       isLiked: true,
       isSaved: true,
-      hasMentorResponse: false,
       fieldOfStudy: 'Biology'
     },
     {
@@ -54,20 +56,24 @@ export default function Home() {
       comments: 43,
       isLiked: false,
       isSaved: false,
-      hasMentorResponse: true,
       fieldOfStudy: 'English Literature'
     }
-  ];
+  ]);
+
+  const handlePostClick = (id: string) => {
+    console.log(`Post ${id} clicked`);
+    // Navigate to post detail page in a real app
+  };
 
   return (
     <div className="bg-gray-950 min-h-screen">
       <div className="container mx-auto max-w-4xl py-8 px-4 sm:px-6">
         <div className="space-y-6">
           {posts.map(post => (
-            <Post key={post.id} {...post} />
+            <Post key={post.id} {...post} onPostClick={handlePostClick} />
           ))}
         </div>
       </div>
     </div>
-  )
+  );
 } 

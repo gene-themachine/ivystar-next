@@ -13,6 +13,8 @@ interface ProfileHeaderProps {
   backgroundImage?: string;
   showMessageButton?: boolean;
   onMessageClick?: () => void;
+  role?: 'mentor' | 'student';
+  gradeLevel?: string;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -24,7 +26,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profileImage,
   backgroundImage,
   showMessageButton = true,
-  onMessageClick
+  onMessageClick,
+  role = 'student',
+  gradeLevel
 }) => {
   return (
     <div className="bg-gray-900 rounded-xl overflow-hidden shadow-xl border border-gray-800">
@@ -36,11 +40,24 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             alt="Profile background"
             fill
             priority
-            sizes="100vw"
-            style={{ objectFit: 'cover', objectPosition: 'center' }}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{ 
+              objectFit: 'cover', 
+              objectPosition: 'center',
+              width: '100%',
+              height: '100%'
+            }}
+            className="transition-opacity duration-500"
+            onError={(e) => {
+              // If image fails to load, fallback to a default background
+              console.warn('Failed to load background image:', backgroundImage);
+              // @ts-ignore - typecasting the event target
+              const imgElement = e.target as HTMLImageElement;
+              imgElement.src = '/images/bg.png';
+            }}
           />
         ) : (
-          <div className="absolute inset-0 bg-black"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800"></div>
         )}
         
         {/* Profile Image - positioned within the banner */}
@@ -68,9 +85,25 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 <FaCheckCircle className="text-blue-500 ml-2 text-lg" />
               )}
             </div>
-            <div className="flex items-center text-gray-400 mt-1">
-              <FaUniversity className="mr-2" />
-              <span>{school}</span>
+            <div className="flex items-center gap-2 text-gray-400 mt-1">
+              <div className="px-3 py-1 bg-gray-800 rounded-full text-sm font-medium">
+                {role === 'mentor' ? 'Mentor' : 'Student'}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 mt-2">
+              {role === 'mentor' && school && (
+                <div className="flex items-center text-sm text-gray-400">
+                  <FaUniversity className="mr-2" />
+                  <span>{school}</span>
+                </div>
+              )}
+              {gradeLevel && (
+                <div className="flex items-center text-sm text-gray-400">
+                  <span className="px-3 py-1 bg-gray-800 rounded-full text-xs">
+                    {gradeLevel}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="mt-4 flex flex-wrap gap-3">
               <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
