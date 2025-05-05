@@ -1,16 +1,8 @@
 import { generateReactHelpers } from "@uploadthing/react";
-import { createUploadthing } from "uploadthing/next";
+import type { OurFileRouter } from "../app/api/uploadthing/core";
 
-export type FileRouterType = {
-  imageUploader: {
-    file: {
-      url: string;
-    };
-    input: null;
-  };
-};
-
-export const { useUploadThing, uploadFiles } = generateReactHelpers<FileRouterType>();
+// Export react hooks
+export const { useUploadThing, uploadFiles } = generateReactHelpers<OurFileRouter>();
 
 // Create an instance of UploadThing's API
 // This can be used in server contexts
