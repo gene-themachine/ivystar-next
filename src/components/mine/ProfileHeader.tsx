@@ -30,6 +30,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   role = 'student',
   gradeLevel
 }) => {
+  console.log("Personal profile role received:", role); // Debug role
+
   return (
     <div className="bg-gray-900 rounded-xl overflow-hidden shadow-xl border border-gray-800">
       {/* Banner image */}
@@ -63,7 +65,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         {/* Profile Image - positioned within the banner */}
         <div className="absolute bottom-4 left-4">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-800 shadow-xl">
-            {profileImage && profileImage !== '/default-profile.jpg' ? (
+            {profileImage ? (
               <Image 
                 src={profileImage} 
                 alt={username} 
@@ -72,15 +74,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 className="object-cover w-full h-full"
               />
             ) : (
-              <div className={`w-full h-full flex items-center justify-center ${role === 'mentor' ? 'bg-orange-600' : 'bg-blue-600'}`}>
-                {username ? (
-                  <span className="text-2xl font-bold text-white">{username.charAt(0).toUpperCase()}</span>
-                ) : (
-                  <svg className="w-10 h-10 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                )}
+              <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
               </div>
             )}
           </div>
@@ -99,7 +96,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               )}
             </div>
             <div className="flex items-center gap-2 text-gray-400 mt-1">
-              <div className="px-3 py-1 bg-gray-800 rounded-full text-sm font-medium">
+              <div className={`px-3 py-1 rounded-md text-sm font-medium border ${
+                role === 'mentor'
+                ? 'border-orange-500 text-orange-400 bg-orange-950/30' 
+                : 'border-blue-500 text-blue-400 bg-blue-950/30'
+              }`}>
                 {role === 'mentor' ? 'Mentor' : 'Student'}
               </div>
             </div>

@@ -50,12 +50,13 @@ export default function ProfilePage() {
   
   // Get metadata with fallbacks
   const metadata = user?.unsafeMetadata as UserMetadata | undefined;
-  const profilePhoto = metadata?.profilePhoto || user?.imageUrl || "/default-profile.jpg";
+  const profilePhoto = metadata?.profilePhoto || user?.imageUrl || null;
   const backgroundPhoto = metadata?.backgroundPhoto || null;
   const college = metadata?.college || "Default University";
   const defaultBio = `I'm a member of the Ivystar community passionate about education and collaboration.`;
   const bio = metadata?.bio || defaultBio;
   const userRole = metadata?.role || 'student';
+  console.log("User role from Clerk:", userRole); // Debug user role
   const gradeLevel = metadata?.gradeLevel || 'Freshman';
   const workSamples = metadata?.workSamples || [];
   const isVerified = metadata?.isVerified || false; // Default to not verified

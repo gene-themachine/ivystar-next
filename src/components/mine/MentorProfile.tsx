@@ -69,6 +69,7 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
           profileImage={profileImage}
           backgroundImage={backgroundImage}
           onMessageClick={handleMessageClick}
+          role="mentor"
         />
       
         {/* Bottom 40% of the page - Content sections */}

@@ -60,6 +60,7 @@ export default function Sidebar() {
   
   // Get user role with fallback
   const userRole = metadata?.role || 'student'
+  console.log("Sidebar user role from Clerk:", userRole) // Debug user role
 
   const handleLogout = () => {
     setIsMenuOpen(false)
@@ -195,14 +196,13 @@ export default function Sidebar() {
               onClick={() => router.push('/profile')}
             >
               <div 
-                className="w-10 h-10 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-gray-300 overflow-hidden border-2 border-gray-700 shadow-sm"
+                className="w-10 h-10 rounded-full bg-gray-800 mr-3 flex items-center justify-center text-gray-300 overflow-hidden border border-gray-700 shadow-sm"
               >
                 {profilePhotoUrl ? (
                   <img src={profilePhotoUrl} alt={displayUsername as string} className="w-full h-full object-cover" />
                 ) : (
-                  <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                   </svg>
                 )}
               </div>
@@ -217,10 +217,10 @@ export default function Sidebar() {
                     </span>
                   ) : (
                     <span className={userRole === 'mentor' 
-                      ? 'text-sm text-orange-400' 
-                      : 'text-sm text-blue-500'
+                      ? 'inline-flex items-center px-2 py-0.5 rounded-md text-[0.65rem] font-medium border border-orange-500 text-orange-400 bg-orange-950/20' 
+                      : 'inline-flex items-center px-2 py-0.5 rounded-md text-[0.65rem] font-medium border border-blue-500 text-blue-400 bg-blue-950/20'
                     }>
-                      {userRole === 'mentor' ? '( Mentor )' : '( Student )'}
+                      {userRole === 'mentor' ? 'Mentor' : 'Student'}
                     </span>
                   )}
                 </div>
