@@ -9,6 +9,7 @@ interface ClerkUser {
     interests?: string[];
     college?: string | null;
     gradeLevel?: string | null;
+    isVerified?: boolean;
   };
 }
 
@@ -24,6 +25,7 @@ interface UserState {
   projectDescription: string | null;
   college: string | null;
   gradeLevel: string | null;
+  isVerified: boolean | undefined;
   isLoaded: boolean;
   
   // Action to set user data
@@ -36,6 +38,7 @@ interface UserState {
     projectDescription?: string;
     college?: string;
     gradeLevel?: string;
+    isVerified?: boolean;
   }) => void;
   
   // Action to reset user data
@@ -51,6 +54,7 @@ export const useUserStore = create<UserState>((set) => ({
   projectDescription: null,
   college: null,
   gradeLevel: null,
+  isVerified: undefined,
   isLoaded: false,
   
   setUserData: (userData) => set((state) => ({
@@ -68,6 +72,7 @@ export const useUserStore = create<UserState>((set) => ({
     projectDescription: null,
     college: null,
     gradeLevel: null,
+    isVerified: undefined,
     isLoaded: false
   })
 })); 

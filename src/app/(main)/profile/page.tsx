@@ -23,6 +23,7 @@ interface UserMetadata {
   college?: string;
   bio?: string;
   gradeLevel?: string;
+  isVerified?: boolean; // Optional verification status for mentors
   workSamples?: {
     id: string;
     title: string;
@@ -57,11 +58,12 @@ export default function ProfilePage() {
   const userRole = metadata?.role || 'student';
   const gradeLevel = metadata?.gradeLevel || 'Freshman';
   const workSamples = metadata?.workSamples || [];
+  const isVerified = metadata?.isVerified || false; // Default to not verified
   
   // Initial profile data
   const [profileData, setProfileData] = useState({
     username: displayUsername,
-    isVerified: true,
+    isVerified: isVerified,
     school: college,
     hourlyRate: 50,
     memberSince: "January 2023",
@@ -94,6 +96,7 @@ export default function ProfilePage() {
       const bio = metadata?.bio || defaultBio;
       const userRole = metadata?.role || 'student';
       const gradeLevel = metadata?.gradeLevel || 'Freshman';
+      const isVerified = metadata?.isVerified || false;
       
       setProfileData(prev => ({
         ...prev,
@@ -103,7 +106,8 @@ export default function ProfilePage() {
         school: college,
         bio: bio,
         role: userRole,
-        gradeLevel: gradeLevel
+        gradeLevel: gradeLevel,
+        isVerified: isVerified
       }));
       
       setEditForm({

@@ -40,7 +40,10 @@ export default function MainLayout({
           interests: (user.unsafeMetadata?.interests as string[]) || [],
           profilePhoto: (user.unsafeMetadata?.profilePhoto as string) || '',
           projectPhoto: (user.unsafeMetadata?.projectPhoto as string) || '',
-          projectDescription: (user.unsafeMetadata?.projectDescription as string) || ''
+          projectDescription: (user.unsafeMetadata?.projectDescription as string) || '',
+          college: (user.unsafeMetadata?.college as string) || undefined,
+          gradeLevel: (user.unsafeMetadata?.gradeLevel as string) || undefined,
+          isVerified: (user.unsafeMetadata?.isVerified as boolean) || undefined
         });
       } else {
         // Reset user data if there's no user

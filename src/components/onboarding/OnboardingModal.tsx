@@ -184,6 +184,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
         userMetadata.college = college;
       }
       
+      // Explicitly set verification status to false for mentors
+      if (userRole === 'mentor') {
+        userMetadata.isVerified = false;
+      }
+      
       // Only add profilePhoto to metadata if it's not the default photo
       if (finalProfilePhotoUrl !== '/default-profile.jpg') {
         userMetadata.profilePhoto = finalProfilePhotoUrl;
@@ -203,7 +208,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
         interests,
         profilePhoto: finalProfilePhotoUrl,
         college: userRole === 'mentor' ? college : undefined,
-        gradeLevel
+        gradeLevel,
+        isVerified: userRole === 'mentor' ? false : undefined
       });
       
       // First close the modal
