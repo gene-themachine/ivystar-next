@@ -63,13 +63,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         {/* Profile Image - positioned within the banner */}
         <div className="absolute bottom-4 left-4">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-800 shadow-xl">
-            <Image 
-              src={profileImage} 
-              alt={username} 
-              width={96} 
-              height={96} 
-              className="object-cover w-full h-full"
-            />
+            <div className={`w-full h-full flex items-center justify-center text-2xl font-bold ${role === 'mentor' ? 'bg-orange-600' : 'bg-blue-600'}`}>
+              {username ? username.charAt(0).toUpperCase() : '?'}
+            </div>
           </div>
         </div>
       </div>

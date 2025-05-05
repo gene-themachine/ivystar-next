@@ -58,7 +58,7 @@ const Flow4: React.FC<Flow4Props> = ({
       <div className="flex flex-col items-center gap-6">
         {/* Preview of selected photo */}
         <div className="relative w-40 h-40 mx-auto rounded-full overflow-hidden">
-          <div className="w-full h-full bg-gray-800 rounded-full overflow-hidden border-4 border-orange-500 flex items-center justify-center group">
+          <div className="w-full h-full bg-gray-800 rounded-full overflow-hidden border-4 border-blue-600 flex items-center justify-center group">
             {(previewUrl || profilePhoto !== '/default-profile.jpg') ? (
               <Image 
                 src={previewUrl || profilePhoto} 
@@ -105,7 +105,7 @@ const Flow4: React.FC<Flow4Props> = ({
           You can upload a JPEG, PNG, or GIF file (max 4MB).
         </div>
         
-        <div className="text-center text-sm text-gray-500 max-w-md">
+        <div className="text-center text-sm text-blue-400 max-w-md">
           Please don't upload a personal photo. Choose an image that reflects your interests or personality instead.
         </div>
         

@@ -62,10 +62,10 @@ const Flow2: React.FC<Flow2Props> = ({ username, setUsername, college, setColleg
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white text-base focus:border-orange-500 focus:ring-orange-500 transition"
+            className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white text-base focus:border-blue-500 focus:ring-blue-500 transition"
             placeholder="Choose an anonymous username"
           />
-          <p className="text-gray-500 text-xs mt-1">For privacy, please don't use your real name</p>
+          <p className="text-blue-400 text-xs mt-1">For privacy, please don't use your real name</p>
           {errors.username && (
             <p className="text-red-500 mt-2 text-sm">{errors.username}</p>
           )}
@@ -81,7 +81,7 @@ const Flow2: React.FC<Flow2Props> = ({ username, setUsername, college, setColleg
               id="college"
               value={college}
               onChange={(e) => setCollege(e.target.value)}
-              className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white text-base focus:border-orange-500 focus:ring-orange-500 transition"
+              className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white text-base focus:border-blue-500 focus:ring-blue-500 transition"
               placeholder="Enter your college/university"
             />
             {errors.college && (
@@ -98,7 +98,7 @@ const Flow2: React.FC<Flow2Props> = ({ username, setUsername, college, setColleg
             id="gradeLevel"
             value={gradeLevel}
             onChange={(e) => setGradeLevel(e.target.value)}
-            className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white text-base focus:border-orange-500 focus:ring-orange-500 transition"
+            className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white text-base focus:border-blue-500 focus:ring-blue-500 transition"
           >
             {gradeLevelOptions.map(option => (
               <option key={option} value={option}>{option}</option>

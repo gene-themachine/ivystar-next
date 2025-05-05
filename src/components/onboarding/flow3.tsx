@@ -72,7 +72,7 @@ const Flow3: React.FC<Flow3Props> = ({
               disabled={hasReachedLimit && !interests.includes(interest)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 interests.includes(interest)
-                  ? 'bg-orange-500 text-white'
+                  ? 'bg-blue-500 text-white'
                   : hasReachedLimit
                     ? 'bg-gray-900 text-gray-600 cursor-not-allowed'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -92,7 +92,7 @@ const Flow3: React.FC<Flow3Props> = ({
               type="text"
               value={customInterest}
               onChange={(e) => setCustomInterest(e.target.value)}
-              className={`flex-grow p-3 bg-gray-900 rounded-l-lg border border-gray-700 text-white text-base focus:border-orange-500 focus:ring-orange-500 transition ${
+              className={`flex-grow p-3 bg-gray-900 rounded-l-lg border border-gray-700 text-white text-base focus:border-blue-500 focus:ring-blue-500 transition ${
                 hasReachedLimit ? 'opacity-60 cursor-not-allowed' : ''
               }`}
               placeholder={hasReachedLimit ? "Maximum interests reached" : "Add custom interest"}
@@ -111,7 +111,7 @@ const Flow3: React.FC<Flow3Props> = ({
               className={`text-white px-4 py-3 rounded-r-lg text-base font-medium transition ${
                 hasReachedLimit || customInterest.trim() === ''
                   ? 'bg-gray-700 cursor-not-allowed'
-                  : 'bg-orange-500 hover:bg-orange-600'
+                  : 'bg-blue-500 hover:bg-blue-600'
               }`}
             >
               Add

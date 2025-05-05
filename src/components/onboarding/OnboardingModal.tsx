@@ -281,11 +281,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
             {/* Step indicator */}
             <div className="px-5 py-3 border-b border-gray-800">
               <div className="flex items-center justify-between mb-2">
-                <span className={`text-xs font-medium ${step >= 1 ? 'text-orange-500' : 'text-gray-500'}`}>Role</span>
-                <span className={`text-xs font-medium ${step >= 2 ? 'text-orange-500' : 'text-gray-500'}`}>Username</span>
-                <span className={`text-xs font-medium ${step >= 3 ? 'text-orange-500' : 'text-gray-500'}`}>Interests</span>
-                <span className={`text-xs font-medium ${step >= 4 ? 'text-orange-500' : 'text-gray-500'}`}>Photo</span>
-                <span className={`text-xs font-medium ${step >= 5 ? 'text-orange-500' : 'text-gray-500'}`}>Preview</span>
+                <span className={`text-xs font-medium ${step >= 1 ? 'text-orange-500' : 'text-orange-500 opacity-50'}`}>Role</span>
+                <span className={`text-xs font-medium ${step >= 2 ? 'text-orange-500' : 'text-orange-500 opacity-50'}`}>Username</span>
+                <span className={`text-xs font-medium ${step >= 3 ? 'text-orange-500' : 'text-orange-500 opacity-50'}`}>Interests</span>
+                <span className={`text-xs font-medium ${step >= 4 ? 'text-orange-500' : 'text-orange-500 opacity-50'}`}>Photo</span>
+                <span className={`text-xs font-medium ${step >= 5 ? 'text-orange-500' : 'text-orange-500 opacity-50'}`}>Preview</span>
               </div>
               <div className="relative h-1 bg-gray-800 rounded-full">
                 <motion.div 
