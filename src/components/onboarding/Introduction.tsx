@@ -34,22 +34,24 @@ const Introduction: React.FC<IntroductionProps> = ({ onContinue }) => {
         </p>
       </div>
       
-      {/* Role options with custom colors */}
+      {/* Role options with badges */}
       <div className="flex justify-center gap-10 mb-6">
-        <div className="w-[270px] h-32 orange-section-3 rounded-xl flex flex-col items-center justify-center p-4 shadow-lg">
+        <div className="w-[270px] h-32 bg-gray-800 rounded-xl flex flex-col items-center justify-center p-4 shadow-lg border border-gray-700 relative">
+          <div className="absolute top-0 left-0 orange-section-2 w-6 h-6 rounded-tl-xl rounded-br-md"></div>
           <h3 className="text-white font-semibold text-2xl mb-2">Mentor</h3>
-          <p className="text-gray-200 text-lg">I want to teach and share my expertise</p>
+          <p className="text-gray-300 text-lg">I want to teach and share my expertise</p>
         </div>
         
-        <div className="w-[270px] h-32 blue-section-3 rounded-xl flex flex-col items-center justify-center p-4 shadow-lg">
+        <div className="w-[270px] h-32 bg-gray-800 rounded-xl flex flex-col items-center justify-center p-4 shadow-lg border border-gray-700 relative">
+          <div className="absolute top-0 left-0 blue-section-2 w-6 h-6 rounded-tl-xl rounded-br-md"></div>
           <h3 className="text-white font-semibold text-2xl mb-2">Student</h3>
-          <p className="text-gray-200 text-lg">I want to learn and receive guidance</p>
+          <p className="text-gray-300 text-lg">I want to learn and receive guidance</p>
         </div>
       </div>
       
       <button
         onClick={onContinue}
-        className="orange-section-2 hover:orange-section-3 text-white py-2 px-10 rounded-xl font-semibold transition-colors text-xl shadow-md"
+        className="orange-section-2 hover:orange-section-3 text-white py-2.5 px-8 rounded-lg font-medium transition-colors text-lg shadow-md cursor-pointer mt-2 min-w-[140px]"
       >
         Continue
       </button>

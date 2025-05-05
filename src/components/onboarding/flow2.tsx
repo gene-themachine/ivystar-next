@@ -18,40 +18,25 @@ interface Flow2Props {
 }
 
 const Flow2: React.FC<Flow2Props> = ({ username, setUsername, college, setCollege, gradeLevel, setGradeLevel, userRole, errors }) => {
-  // Different grade level options based on role
-  const [gradeLevelOptions, setGradeLevelOptions] = useState<string[]>([]);
+  // Define grade level options based on role directly
+  const studentOptions = ['Middle School', 'High School', 'College', 'Other'];
+  const mentorOptions = ['College Student', 'Master\'s Student', 'PhD', 'Professional'];
   
-  // Update grade level options when user role changes
+  // Determine which options to use based on role
+  const gradeLevelOptions = userRole === 'student' 
+    ? studentOptions 
+    : userRole === 'mentor' 
+      ? mentorOptions 
+      : [];
+  
+  // Set default grade level when role changes (only once)
   useEffect(() => {
-    if (userRole === 'student') {
-      setGradeLevelOptions([
-        'Middle School',
-        'High School',
-        'College',
-        'Other'
-      ]);
-      // Set Middle School as default for students
-      if (!gradeLevel || gradeLevel === '') {
-        setGradeLevel('Middle School');
-      }
-    } else if (userRole === 'mentor') {
-      setGradeLevelOptions([
-        'College Student',
-        'Master\'s Student',
-        'PhD',
-        'Professional',
-      ]);
-      // Set College Student as default for mentors
-      if (!gradeLevel || gradeLevel === '') {
-        setGradeLevel('College Student');
-      }
+    if (userRole === 'student' && (!gradeLevel || !studentOptions.includes(gradeLevel))) {
+      setGradeLevel('Middle School');
+    } else if (userRole === 'mentor' && (!gradeLevel || !mentorOptions.includes(gradeLevel))) {
+      setGradeLevel('College Student');
     }
-    
-    // Reset grade level if it's not in the new options
-    if (userRole && gradeLevelOptions.length > 0 && !gradeLevelOptions.includes(gradeLevel)) {
-      setGradeLevel(gradeLevelOptions[0] || '');
-    }
-  }, [userRole, gradeLevel, gradeLevelOptions, setGradeLevel]);
+  }, [userRole, gradeLevel, studentOptions, mentorOptions, setGradeLevel]);
 
   return (
     <motion.div
@@ -70,7 +55,7 @@ const Flow2: React.FC<Flow2Props> = ({ username, setUsername, college, setColleg
       <div className="space-y-6">
         <div>
           <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-            Username
+            Anonymous Username
           </label>
           <input
             type="text"
@@ -78,8 +63,9 @@ const Flow2: React.FC<Flow2Props> = ({ username, setUsername, college, setColleg
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full p-3 bg-gray-900 rounded-lg border border-gray-700 text-white text-base focus:border-orange-500 focus:ring-orange-500 transition"
-            placeholder="Enter a username"
+            placeholder="Choose an anonymous username"
           />
+          <p className="text-gray-500 text-xs mt-1">For privacy, please don't use your real name</p>
           {errors.username && (
             <p className="text-red-500 mt-2 text-sm">{errors.username}</p>
           )}

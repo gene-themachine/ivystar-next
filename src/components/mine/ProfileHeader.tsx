@@ -10,7 +10,7 @@ interface ProfileHeaderProps {
   hourlyRate: number;
   timeOnPlatform: string;
   profileImage: string;
-  backgroundImage?: string;
+  backgroundImage?: string | null;
   showMessageButton?: boolean;
   onMessageClick?: () => void;
   role?: 'mentor' | 'student';
@@ -57,7 +57,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             }}
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800"></div>
+          <div className="absolute inset-0 bg-black"></div>
         )}
         
         {/* Profile Image - positioned within the banner */}

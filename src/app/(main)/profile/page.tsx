@@ -43,7 +43,7 @@ export default function ProfilePage() {
   // Get metadata with fallbacks
   const metadata = user?.unsafeMetadata as UserMetadata | undefined;
   const profilePhoto = metadata?.profilePhoto || user?.imageUrl || "/default-profile.jpg";
-  const backgroundPhoto = metadata?.backgroundPhoto || "/images/bg.png";
+  const backgroundPhoto = metadata?.backgroundPhoto || null;
   const college = metadata?.college || "Default University";
   const defaultBio = `I'm a member of the Ivystar community passionate about education and collaboration.`;
   const bio = metadata?.bio || defaultBio;
@@ -58,7 +58,7 @@ export default function ProfilePage() {
     hourlyRate: 50,
     memberSince: "January 2023",
     profileImage: profilePhoto,
-    backgroundImage: backgroundPhoto,
+    backgroundImage: backgroundPhoto as string | null,
     bio: bio,
     role: userRole,
     gradeLevel: gradeLevel,
@@ -68,7 +68,7 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState({
     school: college,
     bio: bio,
-    backgroundImage: backgroundPhoto,
+    backgroundImage: backgroundPhoto as string | null,
   });
   
   // Background file to upload
@@ -80,7 +80,7 @@ export default function ProfilePage() {
       // Get the latest metadata
       const metadata = user?.unsafeMetadata as UserMetadata | undefined;
       const profilePhoto = metadata?.profilePhoto || user?.imageUrl || "/images/default-profile.png";
-      const backgroundPhoto = metadata?.backgroundPhoto || "/images/bg.png";
+      const backgroundPhoto = metadata?.backgroundPhoto || null;
       const college = metadata?.college || "Default University";
       const defaultBio = `I'm a member of the Ivystar community passionate about education and collaboration.`;
       const bio = metadata?.bio || defaultBio;

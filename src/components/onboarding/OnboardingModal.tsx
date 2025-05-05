@@ -380,12 +380,12 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
 
         {/* Footer with navigation buttons - hide during introduction */}
         {!showIntroduction && (
-          <div className="px-5 py-4 border-t border-gray-800 flex justify-between">
-            <div className="flex items-center gap-3">
+          <div className="px-5 py-4 border-t border-gray-800 flex justify-between items-center">
+            <div className="flex items-center gap-4">
               <button
                 type="button"
                 onClick={prevStep}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                className={`px-6 py-2.5 rounded-lg text-sm font-medium min-w-[90px] ${
                   step === 1 
                     ? 'text-gray-500 cursor-not-allowed' 
                     : 'text-white bg-gray-800 hover:bg-gray-700 transition'
@@ -399,7 +399,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
                 <button
                   type="button"
                   onClick={skipToPreview}
-                  className="text-gray-400 hover:text-gray-300 transition text-xs"
+                  className="text-gray-400 hover:text-gray-300 transition text-xs ml-1"
                 >
                   Skip to preview
                 </button>
@@ -410,7 +410,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
               type="button"
               onClick={nextStep}
               disabled={isSubmitting}
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              className="px-6 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium min-w-[100px]"
             >
               {isSubmitting ? 'Saving...' : (step < 5 ? 'Continue' : 'Complete')}
             </button>

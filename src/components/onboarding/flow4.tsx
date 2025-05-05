@@ -105,6 +105,10 @@ const Flow4: React.FC<Flow4Props> = ({
           You can upload a JPEG, PNG, or GIF file (max 4MB).
         </div>
         
+        <div className="text-center text-sm text-gray-500 max-w-md">
+          Please don't upload a personal photo. Choose an image that reflects your interests or personality instead.
+        </div>
+        
         {errors.profilePhoto && (
           <p className="text-red-500 text-sm">{errors.profilePhoto}</p>
         )}
