@@ -23,6 +23,13 @@ interface UserMetadata {
   college?: string;
   bio?: string;
   gradeLevel?: string;
+  workSamples?: {
+    id: string;
+    title: string;
+    summary: string;
+    description: string;
+    imageUrl: string;
+  }[];
 }
 
 export default function ProfilePage() {
@@ -49,6 +56,7 @@ export default function ProfilePage() {
   const bio = metadata?.bio || defaultBio;
   const userRole = metadata?.role || 'student';
   const gradeLevel = metadata?.gradeLevel || 'Freshman';
+  const workSamples = metadata?.workSamples || [];
   
   // Initial profile data
   const [profileData, setProfileData] = useState({
@@ -107,26 +115,6 @@ export default function ProfilePage() {
       setIsInitialized(true);
     }
   }, [isLoaded, displayUsername, user?.unsafeMetadata, user?.imageUrl]);
-
-  // Mock portfolio data - keep the array smaller to reduce chunk size
-  const [portfolioItems, setPortfolioItems] = useState([
-    {
-      src: '/images/screenshot1.png',
-      thumbnail: '/images/screenshot1.png',
-      title: 'Skincare Website',
-      description: 'A modern skincare product website with personalized recommendations',
-      width: 1200,
-      height: 800
-    },
-    {
-      src: '/images/screenshot2.png',
-      thumbnail: '/images/screenshot2.png',
-      title: 'Social Media App',
-      description: 'Mobile app for creative content sharing and community building',
-      width: 1200,
-      height: 800
-    }
-  ]);
 
   const handleBackgroundChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -249,16 +237,35 @@ export default function ProfilePage() {
     }
   };
 
-  // Handle edit portfolio
-  const handleEditPortfolio = () => {
-    // Your edit portfolio logic here
-    console.log("Edit portfolio");
-  };
-  
-  // Handle add portfolio item
-  const handleAddPortfolioItem = () => {
-    // Your add portfolio item logic here
-    console.log("Add portfolio item");
+  // Handle update work samples
+  const handleUpdateWorkSamples = async (samples: {
+    id: string;
+    title: string;
+    summary: string;
+    description: string;
+    imageUrl: string;
+  }[]) => {
+    if (!user) return;
+    
+    try {
+      setIsUploading(true);
+      
+      // Update metadata in Clerk
+      await user.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          workSamples: samples
+        }
+      });
+      
+      // Update local state if needed
+      console.log("Work samples updated successfully");
+      
+    } catch (error) {
+      console.error("Error updating work samples:", error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Loading state while data is being initialized
@@ -319,15 +326,14 @@ export default function ProfilePage() {
         
         {/* Portfolio Gallery */}
         <ProfilePortfolio
-          portfolioItems={portfolioItems}
-          onEditPortfolio={handleEditPortfolio}
-          onAddPortfolioItem={handleAddPortfolioItem}
+          workSamples={workSamples}
+          onUpdateWorkSamples={handleUpdateWorkSamples}
         />
         
         {/* Account Settings */}
         <ProfileAccountSettings
           onEditProfile={handleEditProfile}
-          onEditPortfolio={handleEditPortfolio}
+          onEditPortfolio={() => window.scrollTo({ top: document.getElementById('portfolio-section')?.offsetTop || 0, behavior: 'smooth' })}
         />
       </div>
     </div>

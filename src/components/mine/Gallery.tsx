@@ -11,7 +11,8 @@ interface GalleryImage {
   src: string;
   thumbnail: string;
   title?: string;
-  description?: string;
+  summary?: string;    // Brief summary shown in the preview card
+  description?: string; // Full description shown in the lightbox
   width: number;
   height: number;
 }
@@ -71,8 +72,8 @@ const Gallery: React.FC<GalleryProps> = ({ images, title }) => {
             {image.title && (
               <div className="p-3">
                 <h3 className="font-medium text-white">{image.title}</h3>
-                {image.description && (
-                  <p className="text-sm text-gray-300 mt-1">{image.description}</p>
+                {image.summary && (
+                  <p className="text-sm text-gray-300 mt-1">{image.summary}</p>
                 )}
               </div>
             )}

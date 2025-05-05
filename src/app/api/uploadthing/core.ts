@@ -25,6 +25,24 @@ export const ourFileRouter = {
       // Return the file URL to be saved in the user metadata
       return { uploadedBy: metadata.userId, url: file.url };
     }),
+    
+  // New route for portfolio work samples
+  portfolioUploader: f({ image: { maxFileSize: "8MB", maxFileCount: 1 } })
+    .middleware(async ({ req }) => {
+      // This code runs on your server before upload
+      const { userId } = await auth();
+
+      // If you throw, the user will not be able to upload
+      if (!userId) throw new UploadThingError("Unauthorized");
+
+      return { userId };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log("Portfolio sample upload complete for userId:", metadata.userId);
+      console.log("Sample File URL:", file.url);
+
+      return { uploadedBy: metadata.userId, url: file.url };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter; 

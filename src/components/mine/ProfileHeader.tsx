@@ -63,9 +63,26 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         {/* Profile Image - positioned within the banner */}
         <div className="absolute bottom-4 left-4">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-800 shadow-xl">
-            <div className={`w-full h-full flex items-center justify-center text-2xl font-bold ${role === 'mentor' ? 'bg-orange-600' : 'bg-blue-600'}`}>
-              {username ? username.charAt(0).toUpperCase() : '?'}
-            </div>
+            {profileImage && profileImage !== '/default-profile.jpg' ? (
+              <Image 
+                src={profileImage} 
+                alt={username} 
+                width={96} 
+                height={96} 
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <div className={`w-full h-full flex items-center justify-center ${role === 'mentor' ? 'bg-orange-600' : 'bg-blue-600'}`}>
+                {username ? (
+                  <span className="text-2xl font-bold text-white">{username.charAt(0).toUpperCase()}</span>
+                ) : (
+                  <svg className="w-10 h-10 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
