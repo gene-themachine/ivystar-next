@@ -14,6 +14,7 @@ export interface PostType {
   isLiked: boolean;
   isSaved: boolean;
   fieldOfStudy?: string;
+  hasMentorResponse?: boolean;
 }
 
 export interface UserMetadata {
