@@ -30,6 +30,10 @@ const Flow2: React.FC<Flow2Props> = ({ username, setUsername, college, setColleg
         'College',
         'Other'
       ]);
+      // Set Middle School as default for students
+      if (!gradeLevel || gradeLevel === '') {
+        setGradeLevel('Middle School');
+      }
     } else if (userRole === 'mentor') {
       setGradeLevelOptions([
         'College Student',
@@ -37,13 +41,17 @@ const Flow2: React.FC<Flow2Props> = ({ username, setUsername, college, setColleg
         'PhD',
         'Professional',
       ]);
+      // Set College Student as default for mentors
+      if (!gradeLevel || gradeLevel === '') {
+        setGradeLevel('College Student');
+      }
     }
     
     // Reset grade level if it's not in the new options
-    if (userRole && !gradeLevelOptions.includes(gradeLevel)) {
+    if (userRole && gradeLevelOptions.length > 0 && !gradeLevelOptions.includes(gradeLevel)) {
       setGradeLevel(gradeLevelOptions[0] || '');
     }
-  }, [userRole, setGradeLevel]);
+  }, [userRole, gradeLevel, gradeLevelOptions, setGradeLevel]);
 
   return (
     <motion.div
