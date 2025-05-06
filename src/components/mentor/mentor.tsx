@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { FaCheckCircle } from 'react-icons/fa';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,6 +30,7 @@ interface MentorProps {
   bio?: string;
   profileImage?: string;
   portfolio?: PortfolioItem;
+  isVerified?: boolean;
 }
 
 export default function Mentor({ 
@@ -38,7 +40,8 @@ export default function Mentor({
   tags, 
   bio,
   profileImage,
-  portfolio
+  portfolio,
+  isVerified = false
 }: MentorProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [profileImageError, setProfileImageError] = useState(false);
@@ -56,7 +59,7 @@ export default function Mentor({
   
   return (
     <Link 
-      href={`/mentors/${username}`} 
+      href={`/profile/${username}`} 
       className="block group h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -94,8 +97,11 @@ export default function Mentor({
               )}
             </div>
             <div className="space-y-0.5">
-              <h3 className="font-bold text-lg text-white tracking-tight group-hover:text-blue-400 transition-colors">
+              <h3 className="font-bold text-lg text-white tracking-tight group-hover:text-blue-400 transition-colors flex items-center">
                 {username}
+                {isVerified && (
+                  <FaCheckCircle className="text-blue-500 ml-2 text-base" />
+                )}
               </h3>
               <div className="text-gray-400 text-sm">
                 {school}

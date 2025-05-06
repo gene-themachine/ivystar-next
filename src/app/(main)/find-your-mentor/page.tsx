@@ -14,6 +14,7 @@ interface MentorUser {
   profilePhoto?: string;
   backgroundPhoto?: string;
   bio?: string;
+  hourlyRate?: number;
   college?: string;
   gradeLevel?: string;
   isVerified?: boolean;
@@ -77,7 +78,12 @@ export default function FindYourMentor() {
   // Sort mentors based on selected option
   const sortedMentors = [...filteredMentors].sort((a, b) => {
     switch (sortOption) {
-      // Add more sort options when you have relevant fields (hourlyRate, ratings, etc.)
+      case 'price-low':
+        // Sort by price low to high (handle undefined rates with default of 50)
+        return (a.hourlyRate || 50) - (b.hourlyRate || 50);
+      case 'price-high':
+        // Sort by price high to low (handle undefined rates with default of 50)
+        return (b.hourlyRate || 50) - (a.hourlyRate || 50);
       default:
         return 0; // Default to original order
     }
@@ -179,11 +185,12 @@ export default function FindYourMentor() {
                   key={mentor._id}
                   username={mentor.username}
                   school={mentor.college || 'University'}
-                  hourlyRate={50} // Default for now
+                  hourlyRate={mentor.hourlyRate || 50} // Use the actual hourlyRate with fallback
                   tags={mentor.interests}
                   profileImage={mentor.profilePhoto || '/images/default-profile.png'}
                   portfolio={portfolio}
                   bio={mentor.bio || 'Mentor at Ivystar'}
+                  isVerified={mentor.isVerified || false}
                 />
               );
             })}

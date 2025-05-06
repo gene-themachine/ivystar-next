@@ -44,7 +44,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             alt="Profile background"
             fill
             priority
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="100vw"
             style={{ 
               objectFit: 'cover', 
               objectPosition: 'center',
@@ -77,7 +77,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -90,65 +90,57 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       <div className="px-4 py-4 relative">
         {/* Profile Info */}
         <div className="flex flex-col sm:flex-row justify-between items-center">
-          <div className="w-full">
+          <div>
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-white">{username}</h1>
               {isVerified && (
                 <FaCheckCircle className="text-blue-500 ml-2 text-lg" />
               )}
-              
-              {/* Role badge - directly next to username */}
-              <div className={`ml-3 px-3 py-1 rounded-md text-sm font-medium border ${
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <div className={`px-3 py-1 rounded-md text-sm font-medium border ${
                 role === 'mentor'
                 ? 'border-orange-500 text-orange-400 bg-orange-950/30' 
                 : 'border-blue-500 text-blue-400 bg-blue-950/30'
               }`}>
                 {role === 'mentor' ? 'Mentor' : 'Student'}
               </div>
-            </div>
-            
-            <div className="flex flex-col gap-2 mt-2">
-              {role === 'mentor' && school && (
-                <div className="flex items-center text-sm text-gray-400">
-                  <FaUniversity className="mr-2" />
-                  <span>{school}</span>
-                </div>
-              )}
-              {gradeLevel && (
-                <div className="flex items-center text-sm text-gray-400">
-                  <span className="px-3 py-1 bg-gray-800 rounded-full text-xs">
-                    {gradeLevel}
-                  </span>
-                </div>
-              )}
               
-              {/* Stats row */}
-              <div className="flex flex-wrap gap-3 mt-2">
-                {role === 'mentor' && (
-                  <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
-                    <FaDollarSign className="text-green-400 mr-1" />
-                    <span className="text-green-400 font-medium">${hourlyRate.toFixed(2)}/hr</span>
-                  </div>
-                )}
-                <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
-                  <FaClock className="text-blue-400 mr-1" />
-                  <span className="text-blue-400 font-medium">{timeOnPlatform}</span>
+              {/* Display Grade Level if available */}
+              {gradeLevel && (
+                <div className="px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-300">
+                  {gradeLevel}
                 </div>
+              )}
+            </div>
+            <div className="flex items-center text-gray-400 mt-2">
+              <FaUniversity className="mr-2" />
+              <span>{school}</span>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {role === 'mentor' && (
+                <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
+                  <FaDollarSign className="text-green-400 mr-1" />
+                  <span className="text-green-400 font-medium">${hourlyRate.toFixed(2)}/hr</span>
+                </div>
+              )}
+              <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
+                <FaClock className="text-blue-400 mr-1" />
+                <span className="text-blue-400 font-medium">{timeOnPlatform}</span>
               </div>
             </div>
-            
-            {/* Message button */}
-            {showMessageButton && (
-              <div className="mt-4 sm:mt-0">
-                <button 
-                  onClick={onMessageClick}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition text-sm"
-                >
-                  Message
-                </button>
-              </div>
-            )}
           </div>
+          
+          {showMessageButton && (
+            <div className="mt-4 sm:mt-0">
+              <button 
+                onClick={onMessageClick}
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition text-sm"
+              >
+                Message
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

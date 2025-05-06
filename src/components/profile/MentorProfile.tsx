@@ -117,8 +117,8 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
             </div>
           </div>
 
-          {/* Portfolio Gallery - only show for mentors or if portfolio exists */}
-          {(role === 'mentor' || portfolio.length > 0) && (
+          {/* Portfolio Gallery - only show if portfolio has items */}
+          {portfolio.length > 0 && (
             <div className="mt-10">
               <Gallery 
                 images={portfolio}

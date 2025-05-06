@@ -171,7 +171,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
       const userMetadata: any = {
         username: username,
         role: userRole,
-        interests
+        interests,
+        hourlyRate: 50 // Set default hourly rate to $50 for all users
       };
       
       // Only add grade level if it's set
@@ -184,7 +185,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
         userMetadata.college = college;
       }
       
-      // Explicitly set verification status to false for mentors
+      // Add verification status for mentors
       if (userRole === 'mentor') {
         userMetadata.isVerified = false;
       }
@@ -212,7 +213,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
             profilePhoto: finalProfilePhotoUrl !== '/default-profile.jpg' ? finalProfilePhotoUrl : undefined,
             college: userRole === 'mentor' ? college : undefined,
             gradeLevel,
-            isVerified: userRole === 'mentor' ? false : undefined
+            isVerified: userRole === 'mentor' ? false : undefined,
+            hourlyRate: 50 // Set default hourly rate to $50 for all users
           };
           
           // Save to MongoDB via API
@@ -275,35 +277,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
       setGradeLevel('College Student');
     }
   }, [userRole]);
-
-  useEffect(() => {
-    if (isLoaded && user) {
-      // Register the user with default values when they first load the onboarding
-      registerUserWithDefaults();
-    }
-  }, [isLoaded, user]);
-
-  const registerUserWithDefaults = async () => {
-    if (!user) return;
-    
-    try {
-      const response = await fetch('/api/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      if (!response.ok) {
-        console.error('Failed to register user with defaults');
-      } else {
-        console.log('User registered with default bio and hourly rate');
-      }
-    } catch (error) {
-      console.error('Error registering user:', error);
-    }
-  };
-
+  
   // Don't render anything if not open
   if (!isOpen) return null;
 
