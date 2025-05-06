@@ -15,6 +15,8 @@ interface GalleryImage {
   description?: string; // Full description shown in the lightbox
   width: number;
   height: number;
+  id?: string;         // Add optional id field for better keys
+  isHighlighted?: boolean;
 }
 
 interface GalleryProps {
@@ -57,11 +59,11 @@ const Gallery: React.FC<GalleryProps> = ({ images, title }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {images.map((image, index) => (
           <div 
-            key={index} 
+            key={image.id || `image-${index}-${image.src.substring(0, 20)}`}
             className="cursor-pointer bg-gray-800 rounded-lg overflow-hidden"
             onClick={() => openLightbox(index)}
           >
-            <div className="relative aspect-video">
+            <div className="relative aspect-video" key={`img-container-${image.id || index}`}>
               <Image
                 src={image.thumbnail}
                 alt={image.title || `Gallery image ${index + 1}`}
@@ -70,10 +72,12 @@ const Gallery: React.FC<GalleryProps> = ({ images, title }) => {
               />
             </div>
             {image.title && (
-              <div className="p-3">
+              <div className="p-3" key={`title-container-${image.id || index}`}>
                 <h3 className="font-medium text-white">{image.title}</h3>
                 {image.summary && (
-                  <p className="text-sm text-gray-300 mt-1">{image.summary}</p>
+                  <p className="text-sm text-gray-300 mt-1" key={`summary-${image.id || index}`}>
+                    {image.summary}
+                  </p>
                 )}
               </div>
             )}

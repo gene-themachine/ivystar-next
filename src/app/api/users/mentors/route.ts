@@ -8,7 +8,8 @@ export async function GET() {
     await connectDB();
     
     // Find all users with role "mentor"
-    const mentors = await User.find({ role: 'mentor' });
+    // Make sure to explicitly select all fields, including quote
+    const mentors = await User.find({ role: 'mentor' }).select('-__v');
     
     if (!mentors || mentors.length === 0) {
       return NextResponse.json({ mentors: [] }, { status: 200 });
@@ -23,6 +24,8 @@ export async function GET() {
           
           // Convert mongoose document to plain object and add projects
           const mentorObj = mentor.toObject();
+          // Log the mentor object to check if quote field exists
+          console.log(`Mentor ${mentor.username} quote:`, mentor.quote);
           return {
             ...mentorObj,
             projects: projects || []

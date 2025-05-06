@@ -29,16 +29,22 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
   const [isEditingWorkSample, setIsEditingWorkSample] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   
+  // Helper function to generate unique IDs
+  const generateUniqueId = () => {
+    return `ws-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  };
+  
   // Convert work samples to gallery format
-  const galleryImages = workSamples.map(sample => ({
+  const galleryImages = workSamples.map((sample) => ({
     src: sample.imageUrl,
     thumbnail: sample.imageUrl,
     title: sample.title,
-    summary: sample.summary,         // Added brief summary field
-    description: sample.description,  // Full description for the lightbox
-    isHighlighted: sample.isHighlighted, // Add highlighted status to gallery
-    width: 1200, // Default width
-    height: 800  // Default height
+    summary: sample.summary,
+    description: sample.description,
+    isHighlighted: sample.isHighlighted,
+    id: sample.id, // Important: Use the exact same ID without modification
+    width: 1200,
+    height: 800
   }));
   
   const handleAddWorkSample = async (sample: { 
@@ -52,7 +58,7 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
       
       // Create a new work sample with a unique ID
       const newSample: WorkSample = {
-        id: Date.now().toString(), // Simple unique ID
+        id: generateUniqueId(), // Use our more robust ID generator
         ...sample,
         isHighlighted: false // New project is not highlighted by default
       };
@@ -123,23 +129,53 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
     try {
       setIsProcessing(true);
       
-      // Find the currently highlighted sample (if any)
-      const currentlyHighlighted = workSamples.find(sample => sample.isHighlighted);
+      // Log the ID being toggled and all available IDs for debugging
+      console.log(`Toggling highlight for ID: ${id}`);
+      console.log("All project IDs:", workSamples.map(s => `"${s.id}"`).join(", "));
       
-      // Update all samples - remove highlight from currently highlighted,
-      // and add it to the newly highlighted one
-      const updatedSamples = workSamples.map(sample => ({
+      // First, create a clean deep copy of the work samples to avoid any reference issues
+      // This is crucial for ensuring state updates work correctly
+      const workSamplesCopy = JSON.parse(JSON.stringify(workSamples)) as WorkSample[];
+      
+      // Ensure all samples have consistent ID formatting to avoid string/number comparison issues
+      const cleanSamples = workSamplesCopy.map(sample => ({
         ...sample,
-        isHighlighted: sample.id === id ? true : false
+        id: String(sample.id).trim() // Ensure ID is a string and trimmed
       }));
       
-      // Save the updated samples
-      await onUpdateWorkSamples(updatedSamples);
+      // Find the target project, using a strict string comparison
+      const targetId = String(id).trim();
+      const targetIndex = cleanSamples.findIndex(sample => String(sample.id).trim() === targetId);
       
-      // Show confirmation
-      if (currentlyHighlighted?.id !== id) {
-        console.log(`Project "${updatedSamples.find(s => s.id === id)?.title}" is now highlighted`);
+      if (targetIndex === -1) {
+        console.error(`Project with ID "${id}" not found! Available IDs:`, cleanSamples.map(s => s.id));
+        setIsProcessing(false);
+        return;
       }
+      
+      // Log the project we found
+      console.log(`Found project to toggle: "${cleanSamples[targetIndex].title}" (ID: ${cleanSamples[targetIndex].id})`);
+      
+      // Check if this project is currently highlighted
+      const wasHighlighted = Boolean(cleanSamples[targetIndex].isHighlighted);
+      console.log(`This project was previously highlighted: ${wasHighlighted}`);
+      
+      // Clear all highlights first
+      cleanSamples.forEach(sample => {
+        sample.isHighlighted = false;
+      });
+      
+      // If the project wasn't already highlighted, turn on its highlight
+      if (!wasHighlighted) {
+        cleanSamples[targetIndex].isHighlighted = true;
+        console.log(`Highlighting project: "${cleanSamples[targetIndex].title}"`);
+      } else {
+        console.log(`Removing all highlights as requested`);
+      }
+      
+      // Save the updated samples
+      await onUpdateWorkSamples(cleanSamples);
+      
     } catch (error) {
       console.error('Error highlighting work sample:', error);
     } finally {
@@ -256,18 +292,27 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
                 <div className="mt-6 bg-gray-900 rounded-xl p-4 border border-gray-800">
                   <h3 className="font-medium mb-3">Manage Work Samples</h3>
                   <div className="space-y-2">
-                    {workSamples.map(sample => (
+                    {workSamples.map((sample) => (
                       <div key={sample.id} className="flex justify-between items-center bg-gray-800 p-3 rounded-lg">
                         <div className="flex-1 overflow-hidden">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{sample.title}</span>
-                            {sample.isHighlighted && <FaStar className="text-yellow-500" size={16} title="Highlighted Project" />}
+                            {sample.isHighlighted && (
+                              <FaStar 
+                                className="text-yellow-500" 
+                                size={16} 
+                                title="Highlighted Project" 
+                              />
+                            )}
                           </div>
                           <span className="text-sm text-gray-400 block truncate">{sample.summary}</span>
                         </div>
                         <div className="flex gap-2 ml-4">
                           <button 
-                            onClick={() => handleToggleHighlight(sample.id)}
+                            onClick={() => {
+                              console.log(`Star clicked for project: "${sample.title}" (ID: ${sample.id})`);
+                              handleToggleHighlight(sample.id);
+                            }}
                             className={`p-1.5 ${sample.isHighlighted ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
                             title={sample.isHighlighted ? "Remove highlight" : "Highlight this project"}
                             disabled={isProcessing}

@@ -69,7 +69,7 @@ export default function ProfilePage() {
   console.log("User role from Clerk:", userRole); // Debug user role
   const gradeLevel = metadata?.gradeLevel || 'Freshman';
   const interests = metadata?.interests || []; // Get interests with empty array fallback
-  const isVerified = metadata?.isVerified || false; // Default to not verified
+  const isVerified = metadata?.isVerified || false;
   
   // Initial profile data
   const [profileData, setProfileData] = useState({
@@ -120,19 +120,55 @@ export default function ProfilePage() {
           if (response.ok) {
             const data = await response.json();
             // Use MongoDB projects if available, fallback to Clerk metadata
-            const projects = data.projects && data.projects.length > 0 
+            let projects = data.projects && data.projects.length > 0 
               ? data.projects 
               : (metadata?.workSamples || []);
             
+            // Ensure all projects have valid, consistent IDs
+            projects = projects.map((project: { 
+              id?: string;
+              title: string;
+              summary: string;
+              description: string;
+              imageUrl: string;
+              isHighlighted?: boolean;
+            }) => ({
+              ...project,
+              id: project.id || `ws-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            }));
+            
+            console.log("Fetched projects:", projects);
             setWorkSamples(projects);
           } else {
             // Fallback to Clerk metadata if MongoDB fetch fails
-            setWorkSamples(metadata?.workSamples || []);
+            const projects = (metadata?.workSamples || []).map((project: { 
+              id?: string;
+              title: string;
+              summary: string;
+              description: string;
+              imageUrl: string;
+              isHighlighted?: boolean;
+            }) => ({
+              ...project,
+              id: project.id || `ws-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            }));
+            setWorkSamples(projects);
           }
         } catch (error) {
           console.error('Error fetching projects:', error);
           // Fallback to Clerk metadata
-          setWorkSamples(metadata?.workSamples || []);
+          const projects = (metadata?.workSamples || []).map((project: { 
+            id?: string;
+            title: string;
+            summary: string;
+            description: string;
+            imageUrl: string;
+            isHighlighted?: boolean;
+          }) => ({
+            ...project,
+            id: project.id || `ws-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+          }));
+          setWorkSamples(projects);
         }
       };
       
@@ -208,6 +244,7 @@ export default function ProfilePage() {
   };
   
   const handleFormChange = (field: 'bio' | 'school', value: string) => {
+    console.log(`Updating ${field} to:`, value);
     setEditForm(prev => ({ ...prev, [field]: value }));
   };
 
@@ -284,7 +321,7 @@ export default function ProfilePage() {
           finalProfileUrl = uploadResult[0].url;
         }
       }
-      
+
       // Update metadata in Clerk
       await user.update({
         unsafeMetadata: {
@@ -299,7 +336,6 @@ export default function ProfilePage() {
       
       // Update in MongoDB
       try {
-        // Prepare data for MongoDB
         const mongoData = {
           clerkId: user.id,
           username: profileData.username,
@@ -361,20 +397,35 @@ export default function ProfilePage() {
     try {
       setIsUploading(true);
       
-      // Ensure only one project is highlighted
+      // Ensure only one project is highlighted - simplified and more explicit approach
       const highlightedSamples = samples.filter(sample => sample.isHighlighted);
+      
+      // If more than one project is highlighted, force only one to be highlighted
       if (highlightedSamples.length > 1) {
-        console.error("Only one project can be highlighted at a time");
-        // Fix by keeping only the last highlighted project
-        const fixedSamples = [...samples];
-        for (let i = 0; i < highlightedSamples.length - 1; i++) {
-          const index = fixedSamples.findIndex(s => s.id === highlightedSamples[i].id);
-          if (index >= 0) {
-            fixedSamples[index] = { ...fixedSamples[index], isHighlighted: false };
-          }
+        console.log("Multiple highlighted projects detected. Fixing...");
+        
+        // Create a new array with all highlights turned off
+        let processedSamples = samples.map(sample => ({
+          ...sample,
+          isHighlighted: false
+        }));
+        
+        // Only highlight the most recently selected project
+        const mostRecentHighlighted = highlightedSamples[highlightedSamples.length - 1];
+        const targetIndex = processedSamples.findIndex(s => s.id === mostRecentHighlighted.id);
+        
+        if (targetIndex !== -1) {
+          processedSamples[targetIndex].isHighlighted = true;
+          console.log(`Fixed: Only "${processedSamples[targetIndex].title}" is now highlighted.`);
         }
-        samples = fixedSamples;
+        
+        // Replace the original samples with our fixed version
+        samples = processedSamples;
       }
+      
+      // Count highlighted samples after fix (should be 0 or 1)
+      const highlightedCount = samples.filter(s => s.isHighlighted).length;
+      console.log(`Saving ${samples.length} projects with ${highlightedCount} highlighted project(s)`);
       
       // Update metadata in Clerk
       await user.update({
@@ -402,15 +453,16 @@ export default function ProfilePage() {
           const highlightedProject = samples.find(s => s.isHighlighted);
           if (highlightedProject) {
             console.log(`Highlighted project: ${highlightedProject.title}`);
+          } else {
+            console.log('No project is currently highlighted');
           }
         }
       } catch (mongoError) {
         console.error('Error updating projects in MongoDB:', mongoError);
       }
       
-      // Update local state
-      setWorkSamples(samples);
-      console.log("Work samples updated successfully");
+      // Update local state with the fixed samples
+      setWorkSamples([...samples]);
       
     } catch (error) {
       console.error("Error updating work samples:", error);
@@ -448,9 +500,7 @@ export default function ProfilePage() {
               showMessageButton={false}
               role={profileData.role}
               gradeLevel={profileData.gradeLevel}
-              interests={isEditing ? editForm.interests : profileData.interests}
               isEditing={isEditing}
-              onInterestsChange={handleInterestsChange}
             />
             
             {/* Profile Actions (edit/save buttons, background upload) */}
@@ -469,6 +519,98 @@ export default function ProfilePage() {
             />
           </div>
         </ErrorBoundary>
+
+        {/* Interests Section */}
+        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mt-6 mb-6">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Interests</h2>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              {isEditing ? (
+                <>
+                  {/* Display editable interests tags */}
+                  {editForm.interests.map((interest, index) => (
+                    <div 
+                      key={index}
+                      className={`px-3 py-1 rounded-full text-sm font-medium flex items-center 
+                        ${profileData.role === 'mentor' 
+                          ? 'bg-orange-900/30 text-orange-400 border border-orange-700/30' 
+                          : 'bg-blue-900/30 text-blue-400 border border-blue-700/30'}`}
+                    >
+                      <span>{interest}</span>
+                      <button 
+                        className="ml-1.5 hover:text-white"
+                        onClick={() => {
+                          const updatedInterests = [...editForm.interests];
+                          updatedInterests.splice(index, 1);
+                          handleInterestsChange(updatedInterests);
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {/* Add new interest input */}
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="text"
+                      placeholder="Add interest..."
+                      className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-300"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          const newInterest = e.currentTarget.value.trim();
+                          if (!editForm.interests.includes(newInterest)) {
+                            handleInterestsChange([...editForm.interests, newInterest]);
+                            e.currentTarget.value = '';
+                          }
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={(e) => {
+                        const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                        if (input && input.value.trim()) {
+                          const newInterest = input.value.trim();
+                          if (!editForm.interests.includes(newInterest)) {
+                            handleInterestsChange([...editForm.interests, newInterest]);
+                            input.value = '';
+                          }
+                        }
+                      }}
+                      className={`px-2 py-1 rounded-md text-xs ${
+                        profileData.role === 'mentor' ? 'bg-orange-800 text-white' : 'bg-blue-800 text-white'
+                      }`}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </>
+              ) : (
+                // Display read-only interests
+                profileData.interests.length > 0 ? (
+                  profileData.interests.map((interest, index) => (
+                    <div 
+                      key={index}
+                      className={`px-3 py-1 rounded-full text-sm font-medium
+                        ${profileData.role === 'mentor' 
+                          ? 'bg-orange-900/30 text-orange-400 border border-orange-700/30' 
+                          : 'bg-blue-900/30 text-blue-400 border border-blue-700/30'}`}
+                    >
+                      {interest}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-sm">No interests added yet</p>
+                )
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Bio Section */}
         <ProfileBioSection

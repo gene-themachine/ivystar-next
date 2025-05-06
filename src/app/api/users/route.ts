@@ -3,6 +3,22 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { currentUser } from '@clerk/nextjs/server';
 
+// Define an interface for the update object
+interface UserUpdateData {
+  username: string;
+  email: string;
+  role: string;
+  interests: string[];
+  profilePhoto?: string;
+  backgroundPhoto?: string;
+  bio?: string;
+  projectPhoto?: string;
+  projectDescription?: string;
+  college?: string;
+  gradeLevel?: string;
+  isVerified?: boolean;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const user = await currentUser();
@@ -84,35 +100,16 @@ export async function POST(request: NextRequest) {
     const existingUser = await User.findOne({ clerkId });
     
     if (existingUser) {
-      // Update existing user
-      const updatedUser = await User.findOneAndUpdate(
-        { clerkId },
-        {
-          username,
-          email,
-          role,
-          interests,
-          profilePhoto,
-          backgroundPhoto,
-          bio,
-          projectPhoto,
-          projectDescription,
-          college,
-          gradeLevel,
-          isVerified
-        },
-        { new: true }
-      );
+      // Log incoming data
+      console.log('Updating user in MongoDB.');
+      console.log('Existing user before update:', existingUser);
       
-      return NextResponse.json({ user: updatedUser }, { status: 200 });
-    } else {
-      // Create new user
-      const newUser = await User.create({
-        clerkId,
+      // Create the update object with the proper interface
+      const updateObject: UserUpdateData = {
         username,
         email,
         role,
-        interests,
+        interests: interests || [],
         profilePhoto,
         backgroundPhoto,
         bio,
@@ -121,7 +118,49 @@ export async function POST(request: NextRequest) {
         college,
         gradeLevel,
         isVerified
+      };
+      
+      console.log('Update object being sent to MongoDB:', updateObject);
+      
+      // Update existing user with the explicit update object
+      const updatedUser = await User.findOneAndUpdate(
+        { clerkId },
+        { $set: updateObject }, // Use $set operator to ensure all fields are updated properly
+        { new: true }
+      );
+      
+      console.log('User updated in MongoDB successfully');
+      
+      return NextResponse.json({ user: updatedUser }, { status: 200 });
+    } else {
+      // Log incoming data for new user
+      console.log('Creating new user in MongoDB.');
+      
+      // Create user object with the proper interface
+      const newUserData: UserUpdateData = {
+        username,
+        email,
+        role,
+        interests: interests || [],
+        profilePhoto,
+        backgroundPhoto,
+        bio,
+        projectPhoto,
+        projectDescription,
+        college,
+        gradeLevel,
+        isVerified
+      };
+      
+      console.log('New user data being sent to MongoDB:', newUserData);
+      
+      // Create new user with the properly structured data
+      const newUser = await User.create({
+        clerkId,
+        ...newUserData
       });
+      
+      console.log('New user created in MongoDB successfully');
       
       return NextResponse.json({ user: newUser }, { status: 201 });
     }

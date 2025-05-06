@@ -1,8 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { FaCheckCircle, FaUniversity, FaDollarSign, FaClock, FaPlus, FaTimes } from 'react-icons/fa';
-import { useState } from 'react';
+import { FaCheckCircle, FaUniversity, FaDollarSign, FaClock } from 'react-icons/fa';
 
 interface ProfileHeaderProps {
   username: string;
@@ -16,9 +15,7 @@ interface ProfileHeaderProps {
   onMessageClick?: () => void;
   role?: 'mentor' | 'student';
   gradeLevel?: string;
-  interests?: string[];
   isEditing?: boolean;
-  onInterestsChange?: (interests: string[]) => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -33,37 +30,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onMessageClick,
   role = 'student',
   gradeLevel,
-  interests = [],
-  isEditing = false,
-  onInterestsChange
+  isEditing = false
 }) => {
   console.log("Personal profile role received:", role); // Debug role
-  
-  // State for new interest being added
-  const [newInterest, setNewInterest] = useState('');
-
-  // Handle adding a new interest
-  const handleAddInterest = () => {
-    if (newInterest.trim() && !interests.includes(newInterest.trim())) {
-      const updatedInterests = [...interests, newInterest.trim()];
-      onInterestsChange?.(updatedInterests);
-      setNewInterest('');
-    }
-  };
-
-  // Handle removing an interest
-  const handleRemoveInterest = (interestToRemove: string) => {
-    const updatedInterests = interests.filter(interest => interest !== interestToRemove);
-    onInterestsChange?.(updatedInterests);
-  };
-
-  // Handle key press (Enter to add interest)
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddInterest();
-    }
-  };
 
   return (
     <div className="bg-gray-900 rounded-xl overflow-hidden shadow-xl border border-gray-800">
@@ -127,64 +96,15 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               {isVerified && (
                 <FaCheckCircle className="text-blue-500 ml-2 text-lg" />
               )}
-            </div>
-            
-            {/* Role and Interests in a single row */}
-            <div className="flex flex-wrap items-center gap-2 text-gray-400 mt-1">
-              {/* Role badge */}
-              <div className={`px-3 py-1 rounded-md text-sm font-medium border ${
+              
+              {/* Role badge - directly next to username */}
+              <div className={`ml-3 px-3 py-1 rounded-md text-sm font-medium border ${
                 role === 'mentor'
                 ? 'border-orange-500 text-orange-400 bg-orange-950/30' 
                 : 'border-blue-500 text-blue-400 bg-blue-950/30'
               }`}>
                 {role === 'mentor' ? 'Mentor' : 'Student'}
               </div>
-              
-              {/* Interests label */}
-              <span className="text-sm text-gray-400 ml-1">Interests:</span>
-              
-              {/* Interests tags */}
-              {interests.map((interest, index) => (
-                <div 
-                  key={index}
-                  className={`px-3 py-1 rounded-full text-xs font-medium flex items-center 
-                    ${role === 'mentor' 
-                      ? 'bg-orange-900/30 text-orange-400 border border-orange-700/30' 
-                      : 'bg-blue-900/30 text-blue-400 border border-blue-700/30'}`}
-                >
-                  <span>{interest}</span>
-                  {isEditing && (
-                    <button 
-                      className="ml-1.5 hover:text-white"
-                      onClick={() => handleRemoveInterest(interest)}
-                    >
-                      <FaTimes size={10} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              
-              {/* Add interest input - show only in edit mode */}
-              {isEditing && (
-                <div className="flex items-center gap-1">
-                  <input
-                    type="text"
-                    value={newInterest}
-                    onChange={(e) => setNewInterest(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Add interest..."
-                    className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-300 w-24 sm:w-28"
-                  />
-                  <button
-                    onClick={handleAddInterest}
-                    className={`px-1 py-1 rounded-md text-xs ${
-                      role === 'mentor' ? 'bg-orange-800 text-white' : 'bg-blue-800 text-white'
-                    }`}
-                  >
-                    <FaPlus size={10} />
-                  </button>
-                </div>
-              )}
             </div>
             
             <div className="flex flex-col gap-2 mt-2">

@@ -69,9 +69,9 @@ export default function Saved() {
       username: 'code_ninja',
       school: 'Harvard University',
       hourlyRate: 45,
-      quote: 'Building application that solve real problems is my passion.',
       tags: ['Full Stack', 'React', 'Node.js', 'TypeScript', 'AWS', 'System Design'],
       profileImage: 'profile1.png',
+      bio: 'Building applications that solve real problems is my passion.',
       portfolio: {
         src: '/images/screenshot1.png',
         thumbnail: '/images/screenshot1.png',
@@ -85,9 +85,9 @@ export default function Saved() {
       username: 'algo_master',
       school: 'Princeton University',
       hourlyRate: 60,
-      quote: 'Breaking complex problems into manageable components with proven strategies.',
       tags: ['Algorithms', 'Data Structures', 'Competitive Programming', 'Interview Prep', 'System Design', 'Python'],
       profileImage: 'profile2.png',
+      bio: 'Breaking complex problems into manageable components with proven strategies.',
       portfolio: {
         src: '/images/screenshot2.png',
         thumbnail: '/images/screenshot2.png',
@@ -101,9 +101,9 @@ export default function Saved() {
       username: 'design_pro',
       school: 'Columbia University',
       hourlyRate: 55,
-      quote: 'Guiding design from research to prototyping with evidence-based decisions.',
       tags: ['UX/UI Design', 'Product Design', 'User Research', 'Figma', 'Design Systems', 'Prototyping'],
       profileImage: 'profile3.png',
+      bio: 'Guiding design from research to prototyping with evidence-based decisions.',
       portfolio: {
         src: '/images/screenshot3.png',
         thumbnail: '/images/screenshot3.png',
@@ -117,9 +117,9 @@ export default function Saved() {
       username: 'cybersec_hacker',
       school: 'Dartmouth College',
       hourlyRate: 70,
-      quote: 'Teaching offensive and defensive security tactics for robust system design.',
       tags: ['Cybersecurity', 'Ethical Hacking', 'Penetration Testing', 'Cryptography', 'Network Security', 'Secure Coding'],
       profileImage: 'profile3.png',
+      bio: 'Teaching offensive and defensive security tactics for robust system design.',
       portfolio: {
         src: '/images/screenshot4.png',
         thumbnail: '/images/screenshot4.png',
@@ -194,10 +194,10 @@ export default function Saved() {
                     username={mentor.username}
                     school={mentor.school}
                     hourlyRate={mentor.hourlyRate}
-                    quote={mentor.quote}
                     tags={mentor.tags}
                     profileImage={mentor.profileImage}
                     portfolio={mentor.portfolio}
+                    bio={mentor.bio}
                   />
                 ))}
               </div>

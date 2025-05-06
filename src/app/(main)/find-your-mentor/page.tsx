@@ -180,10 +180,10 @@ export default function FindYourMentor() {
                   username={mentor.username}
                   school={mentor.college || 'University'}
                   hourlyRate={50} // Default for now
-                  quote={mentor.bio || 'Ivystar Mentor'}
                   tags={mentor.interests}
                   profileImage={mentor.profilePhoto || '/images/default-profile.png'}
                   portfolio={portfolio}
+                  bio={mentor.bio || 'Mentor at Ivystar'}
                 />
               );
             })}

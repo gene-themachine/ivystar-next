@@ -82,19 +82,42 @@ const mockMentors = [
     username: 'DrTaylor',
     school: 'Harvard University',
     hourlyRate: 45,
-    quote: 'Helping computer science students bridge the gap between theory and practical applications.',
     tags: ['algorithms', 'data-structures', 'python', 'machine-learning'],
-    profileImage: 'mentor1.jpg'
+    profileImage: 'mentor1.jpg',
+    bio: 'Helping computer science students bridge the gap between theory and practical applications.'
   },
   {
     username: 'ProfJones',
     school: 'Stanford University',
     hourlyRate: 55,
-    quote: 'Passionate about making complex physics concepts accessible to everyone.',
     tags: ['quantum-mechanics', 'electromagnetism', 'thermodynamics', 'astrophysics'],
-    profileImage: 'mentor2.jpg'
+    profileImage: 'mentor2.jpg',
+    bio: 'Passionate about making complex physics concepts accessible to everyone.'
   }
 ]
+
+// Sample mentors data (replace with API data)
+const sampleMentors = [
+  {
+    id: '1',
+    username: 'Alex Johnson',
+    school: 'Stanford University',
+    hourlyRate: 45,
+    tags: ['Computer Science', 'Algorithms', 'Machine Learning', 'Python'],
+    profileImage: '/images/mentors/mentor1.jpg',
+    bio: 'Computer Science professor with expertise in algorithm design and machine learning.'
+  },
+  {
+    id: '2',
+    username: 'Dr. Emily Wong',
+    school: 'MIT',
+    hourlyRate: 60,
+    tags: ['Physics', 'Quantum Mechanics', 'Mathematics', 'Research'],
+    profileImage: '/images/mentors/mentor2.jpg',
+    bio: 'Researcher in quantum physics with a passion for teaching complex theories in simple terms.'
+  },
+  // More sample mentors as needed
+];
 
 export default function SearchResultsPage() {
   const params = useParams()
@@ -262,9 +285,9 @@ export default function SearchResultsPage() {
                         username={mentor.username}
                         school={mentor.school}
                         hourlyRate={mentor.hourlyRate}
-                        quote={mentor.quote}
                         tags={mentor.tags}
                         profileImage={mentor.profileImage}
+                        bio={mentor.bio}
                       />
                     ))}
                   </div>
