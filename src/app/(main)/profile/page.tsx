@@ -30,6 +30,7 @@ interface UserMetadata {
     summary: string;
     description: string;
     imageUrl: string;
+    isHighlighted?: boolean;
   }[];
 }
 
@@ -45,6 +46,7 @@ export default function ProfilePage() {
     summary: string;
     description: string;
     imageUrl: string;
+    isHighlighted?: boolean;
   }>>([]);
   const backgroundInputRef = useRef<HTMLInputElement>(null) as React.RefObject<HTMLInputElement>;
   const profileInputRef = useRef<HTMLInputElement>(null) as React.RefObject<HTMLInputElement>;
@@ -66,6 +68,7 @@ export default function ProfilePage() {
   const userRole = metadata?.role || 'student';
   console.log("User role from Clerk:", userRole); // Debug user role
   const gradeLevel = metadata?.gradeLevel || 'Freshman';
+  const interests = metadata?.interests || []; // Get interests with empty array fallback
   const isVerified = metadata?.isVerified || false; // Default to not verified
   
   // Initial profile data
@@ -80,6 +83,7 @@ export default function ProfilePage() {
     bio: bio,
     role: userRole,
     gradeLevel: gradeLevel,
+    interests: interests,
   });
   
   // Form state for editable fields
@@ -87,6 +91,7 @@ export default function ProfilePage() {
     school: college,
     bio: bio,
     backgroundImage: backgroundPhoto as string | null,
+    interests: interests,
   });
   
   // Background file to upload
@@ -105,6 +110,7 @@ export default function ProfilePage() {
       const bio = metadata?.bio || defaultBio;
       const userRole = metadata?.role || 'student';
       const gradeLevel = metadata?.gradeLevel || 'Freshman';
+      const interests = metadata?.interests || []; // Get interests with empty array fallback
       const isVerified = metadata?.isVerified || false;
       
       // Fetch projects from MongoDB
@@ -141,13 +147,15 @@ export default function ProfilePage() {
         bio: bio,
         role: userRole,
         gradeLevel: gradeLevel,
-        isVerified: isVerified
+        isVerified: isVerified,
+        interests: interests,
       }));
       
       setEditForm({
         school: college,
         bio: bio,
-        backgroundImage: backgroundPhoto
+        backgroundImage: backgroundPhoto,
+        interests: interests,
       });
       
       setIsInitialized(true);
@@ -191,7 +199,8 @@ export default function ProfilePage() {
     setEditForm({
       school: profileData.school,
       bio: profileData.bio,
-      backgroundImage: profileData.backgroundImage
+      backgroundImage: profileData.backgroundImage,
+      interests: profileData.interests,
     });
     setBackgroundFile(null);
     setProfileFile(null);
@@ -200,6 +209,10 @@ export default function ProfilePage() {
   
   const handleFormChange = (field: 'bio' | 'school', value: string) => {
     setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleInterestsChange = (newInterests: string[]) => {
+    setEditForm(prev => ({ ...prev, interests: newInterests }));
   };
 
   const handleSaveProfile = async () => {
@@ -279,7 +292,8 @@ export default function ProfilePage() {
           backgroundPhoto: finalBackgroundUrl,
           profilePhoto: finalProfileUrl,
           college: editForm.school,
-          bio: editForm.bio
+          bio: editForm.bio,
+          interests: editForm.interests,
         }
       });
       
@@ -295,6 +309,7 @@ export default function ProfilePage() {
           profilePhoto: finalProfileUrl,
           backgroundPhoto: finalBackgroundUrl,
           bio: editForm.bio,
+          interests: editForm.interests,
           gradeLevel: profileData.gradeLevel,
         };
         
@@ -320,7 +335,8 @@ export default function ProfilePage() {
         backgroundImage: finalBackgroundUrl,
         profileImage: finalProfileUrl,
         school: editForm.school,
-        bio: editForm.bio
+        bio: editForm.bio,
+        interests: editForm.interests,
       }));
       
       setIsEditing(false);
@@ -338,11 +354,27 @@ export default function ProfilePage() {
     summary: string;
     description: string;
     imageUrl: string;
+    isHighlighted?: boolean;
   }[]) => {
     if (!user) return;
     
     try {
       setIsUploading(true);
+      
+      // Ensure only one project is highlighted
+      const highlightedSamples = samples.filter(sample => sample.isHighlighted);
+      if (highlightedSamples.length > 1) {
+        console.error("Only one project can be highlighted at a time");
+        // Fix by keeping only the last highlighted project
+        const fixedSamples = [...samples];
+        for (let i = 0; i < highlightedSamples.length - 1; i++) {
+          const index = fixedSamples.findIndex(s => s.id === highlightedSamples[i].id);
+          if (index >= 0) {
+            fixedSamples[index] = { ...fixedSamples[index], isHighlighted: false };
+          }
+        }
+        samples = fixedSamples;
+      }
       
       // Update metadata in Clerk
       await user.update({
@@ -365,12 +397,19 @@ export default function ProfilePage() {
           console.error('MongoDB project update failed:', await response.text());
         } else {
           console.log('Projects updated in MongoDB successfully');
+          
+          // Log the highlighted project if there is one
+          const highlightedProject = samples.find(s => s.isHighlighted);
+          if (highlightedProject) {
+            console.log(`Highlighted project: ${highlightedProject.title}`);
+          }
         }
       } catch (mongoError) {
         console.error('Error updating projects in MongoDB:', mongoError);
       }
       
-      // Update local state if needed
+      // Update local state
+      setWorkSamples(samples);
       console.log("Work samples updated successfully");
       
     } catch (error) {
@@ -409,6 +448,9 @@ export default function ProfilePage() {
               showMessageButton={false}
               role={profileData.role}
               gradeLevel={profileData.gradeLevel}
+              interests={isEditing ? editForm.interests : profileData.interests}
+              isEditing={isEditing}
+              onInterestsChange={handleInterestsChange}
             />
             
             {/* Profile Actions (edit/save buttons, background upload) */}

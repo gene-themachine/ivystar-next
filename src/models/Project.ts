@@ -6,6 +6,7 @@ export interface IProject extends Document {
   summary: string;
   description: string;
   imageUrl: string;
+  isHighlighted?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +35,10 @@ const projectSchema = new Schema<IProject>(
     imageUrl: {
       type: String,
       required: true,
+    },
+    isHighlighted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

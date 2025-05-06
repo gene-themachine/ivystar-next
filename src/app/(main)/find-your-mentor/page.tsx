@@ -1,103 +1,87 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Mentor from '@/components/mentor/mentor';
 import { FaSearch, FaFilter, FaSort } from 'react-icons/fa';
 
+interface MentorUser {
+  _id: string;
+  clerkId: string;
+  username: string;
+  email: string;
+  role: 'mentor' | 'student';
+  interests: string[];
+  profilePhoto?: string;
+  backgroundPhoto?: string;
+  bio?: string;
+  college?: string;
+  gradeLevel?: string;
+  isVerified?: boolean;
+  projects?: {
+    _id: string;
+    title: string;
+    summary: string;
+    description: string;
+    imageUrl: string;
+    isHighlighted?: boolean;
+  }[];
+}
+
 export default function FindYourMentor() {
-  // Mentor data
-  const mentors = [
-    {
-      username: 'code_ninja',
-      school: 'Harvard University',
-      hourlyRate: 45,
-      quote: 'Building application that solve real problems is my passion.',
-      tags: ['Full Stack', 'React', 'Node.js', 'TypeScript', 'AWS', 'System Design'],
-      profileImage: 'profile1.png',
-      portfolio: {
-        src: '/images/screenshot1.png',
-        thumbnail: '/images/screenshot1.png',
-        title: 'Skincare Website',
-        description: 'A modern skincare product website with personalized recommendations',
-        width: 1200,
-        height: 800
+  const [mentors, setMentors] = useState<MentorUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOption, setSortOption] = useState('relevance');
+
+  // Fetch mentors from the server
+  useEffect(() => {
+    const fetchMentors = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch all users with role "mentor"
+        const response = await fetch('/api/users/mentors');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch mentors');
+        }
+        
+        const data = await response.json();
+        setMentors(data.mentors || []);
+      } catch (err) {
+        console.error('Error fetching mentors:', err);
+        setError('Failed to load mentors. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
-    },
-    {
-      username: 'algo_master',
-      school: 'Princeton University',
-      hourlyRate: 60,
-      quote: 'Breaking complex problems into manageable components with proven strategies.',
-      tags: ['Algorithms', 'Data Structures', 'Competitive Programming', 'Interview Prep', 'System Design', 'Python'],
-      profileImage: 'profile2.png',
-      portfolio: {
-        src: '/images/screenshot2.png',
-        thumbnail: '/images/screenshot2.png',
-        title: 'Social Media App',
-        description: 'Mobile app for creative content sharing and community building',
-        width: 1200,
-        height: 800
-      }
-    },
-    {
-      username: 'design_pro',
-      school: 'Columbia University',
-      hourlyRate: 55,
-      quote: 'Guiding design from research to prototyping with evidence-based decisions.',
-      tags: ['UX/UI Design', 'Product Design', 'User Research', 'Figma', 'Design Systems', 'Prototyping'],
-      profileImage: 'profile3.png',
-      portfolio: {
-        src: '/images/screenshot3.png',
-        thumbnail: '/images/screenshot3.png',
-        title: 'Pet Walker Service',
-        description: 'Website for connecting pet owners with local pet walkers',
-        width: 1200,
-        height: 800
-      }
-    },
-    {
-      username: 'ml_expert',
-      school: 'Yale University',
-      hourlyRate: 65,
-      quote: 'Combining ML theory with practical implementation for real-world impact.',
-      tags: ['Machine Learning', 'Deep Learning', 'Neural Networks', 'TensorFlow', 'PyTorch', 'NLP', 'Computer Vision'],
-      portfolio: {
-        src: '/images/screenshot4.png',
-        thumbnail: '/images/screenshot4.png',
-        title: 'AI Analytics Dashboard',
-        description: 'Data visualization platform powered by machine learning',
-        width: 1200,
-        height: 800
-      }
-    },
-    {
-      username: 'startup_guru',
-      school: 'Brown University',
-      hourlyRate: 75,
-      quote: 'Helping founders navigate ideation to growth with battle-tested frameworks.',
-      tags: ['Entrepreneurship', 'Venture Capital', 'Business Strategy', 'Product Management', 'Growth Hacking', 'Fundraising'],
-      portfolio: {
-        src: '/images/screenshot5.png',
-        thumbnail: '/images/screenshot5.png',
-        title: 'Startup Incubator Platform',
-        description: 'Web platform connecting founders with investors and resources',
-        width: 1200,
-        height: 800
-      }
-    },
-    {
-      username: 'cybersec_hacker',
-      school: 'Dartmouth College',
-      hourlyRate: 70,
-      quote: 'Teaching offensive and defensive security tactics for robust system design.',
-      tags: ['Cybersecurity', 'Ethical Hacking', 'Penetration Testing', 'Cryptography', 'Network Security', 'Secure Coding'],
-      portfolio: {
-        src: '/images/screenshot6.png',
-        thumbnail: '/images/screenshot6.png',
-        title: 'Security Monitoring Tool',
-        description: 'Network traffic analysis and threat detection dashboard',
-        width: 1200,
-        height: 800
-      }
+    };
+    
+    fetchMentors();
+  }, []);
+
+  // Filter mentors based on search term
+  const filteredMentors = mentors.filter(mentor => {
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Search in username, college, bio, and interests
+    return (
+      mentor.username.toLowerCase().includes(searchLower) ||
+      (mentor.college && mentor.college.toLowerCase().includes(searchLower)) ||
+      (mentor.bio && mentor.bio.toLowerCase().includes(searchLower)) ||
+      mentor.interests.some(interest => interest.toLowerCase().includes(searchLower))
+    );
+  });
+
+  // Sort mentors based on selected option
+  const sortedMentors = [...filteredMentors].sort((a, b) => {
+    switch (sortOption) {
+      // Add more sort options when you have relevant fields (hourlyRate, ratings, etc.)
+      default:
+        return 0; // Default to original order
     }
-  ];
+  });
 
   return (
     <div className="bg-gray-950 text-white min-h-screen">
@@ -113,6 +97,8 @@ export default function FindYourMentor() {
                   type="text"
                   placeholder="Search by skills, topics, or mentor name..."
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
               </div>
@@ -124,7 +110,11 @@ export default function FindYourMentor() {
                 <span>Filters</span>
               </button>
               
-              <select className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <select 
+                className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+              >
                 <option value="relevance">Relevance</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
@@ -134,28 +124,80 @@ export default function FindYourMentor() {
           </div>
         </div>
         
-        {/* Mentors Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {mentors.map((mentor, index) => (
-            <Mentor
-              key={index}
-              username={mentor.username}
-              school={mentor.school}
-              hourlyRate={mentor.hourlyRate}
-              quote={mentor.quote}
-              tags={mentor.tags}
-              profileImage={mentor.profileImage}
-              portfolio={mentor.portfolio}
-            />
-          ))}
-        </div>
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+            <p className="mt-4 text-gray-400">Loading mentors...</p>
+          </div>
+        )}
         
-        {/* Load More Button */}
-        <div className="mt-8 flex justify-center">
-          <button className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors">
-            Load More Mentors
-          </button>
-        </div>
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 rounded-lg p-6 text-center my-8">
+            <p className="text-red-300 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-red-800 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+        
+        {/* Empty State */}
+        {!isLoading && !error && sortedMentors.length === 0 && (
+          <div className="text-center py-16 bg-gray-900 rounded-xl border border-gray-800">
+            <h2 className="text-xl font-bold text-white mb-2">No Mentors Found</h2>
+            {searchTerm ? (
+              <p className="text-gray-400">No mentors match your search criteria. Try a different search term.</p>
+            ) : (
+              <p className="text-gray-400">There are no mentors available at this time. Check back later!</p>
+            )}
+          </div>
+        )}
+        
+        {/* Mentors Grid */}
+        {!isLoading && !error && sortedMentors.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {sortedMentors.map((mentor) => {
+              // Find highlighted project if any
+              const highlightedProject = mentor.projects?.find(project => project.isHighlighted);
+              
+              // Prepare portfolio data
+              const portfolio = highlightedProject ? {
+                src: highlightedProject.imageUrl,
+                thumbnail: highlightedProject.imageUrl,
+                title: highlightedProject.title,
+                description: highlightedProject.description,
+                width: 1200,
+                height: 800
+              } : undefined;
+              
+              return (
+                <Mentor
+                  key={mentor._id}
+                  username={mentor.username}
+                  school={mentor.college || 'University'}
+                  hourlyRate={50} // Default for now
+                  quote={mentor.bio || 'Ivystar Mentor'}
+                  tags={mentor.interests}
+                  profileImage={mentor.profilePhoto || '/images/default-profile.png'}
+                  portfolio={portfolio}
+                />
+              );
+            })}
+          </div>
+        )}
+        
+        {/* Load More Button - only show if we implement pagination */}
+        {!isLoading && !error && sortedMentors.length > 0 && (
+          <div className="mt-8 flex justify-center">
+            <button className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors">
+              Load More Mentors
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

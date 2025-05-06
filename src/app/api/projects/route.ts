@@ -54,6 +54,16 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Validate: ensure only one project is highlighted
+    const highlightedProjects = projects.filter(project => project.isHighlighted);
+    
+    if (highlightedProjects.length > 1) {
+      return NextResponse.json(
+        { error: 'Only one project can be highlighted at a time' },
+        { status: 400 }
+      );
+    }
+    
     // First delete all existing projects for this user
     await Project.deleteMany({ clerkId: user.id });
     
@@ -64,6 +74,12 @@ export async function POST(request: NextRequest) {
         clerkId: user.id
       }))
     );
+    
+    // Log the highlighted project if there is one
+    const highlightedProject = createdProjects.find(p => p.isHighlighted);
+    if (highlightedProject) {
+      console.log(`User ${user.id} highlighted project: "${highlightedProject.title}"`);
+    }
     
     return NextResponse.json({ 
       message: 'Projects saved successfully',

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { FaRegComment, FaRegHeart, FaHeart, FaRegBookmark, FaBookmark, FaCheck, FaGraduationCap, FaChalkboardTeacher, FaImage } from 'react-icons/fa';
 import { PostType } from '@/types';
 import Image from 'next/image';
+import ProfileImage from './ProfileImage';
 
 interface PostProps extends PostType {
   onPostClick?: (id: string) => void;
@@ -83,35 +84,20 @@ const Post: React.FC<PostProps> = ({
       onClick={handlePostClick}
     >
       <div className="flex items-start gap-4 mb-6">
-        <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0">
-          <Image 
-            src={profileImage || '/images/default-profile.png'} 
-            alt={author} 
-            width={56} 
-            height={56}
-            className="rounded-full object-cover w-full h-full border-2 border-gray-800"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/images/default-profile.png';
-            }}
-            unoptimized
-          />
-        </div>
+        <ProfileImage src={profileImage} alt={author} size={56} className="border-2 border-gray-800" />
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className="font-semibold text-white">{author}</span>
             {/* Show verification badge only for mentors */}
             {isMentor && isVerified && <FaCheck size={18} className="text-orange-500" title="Verified Mentor" />}
             
-            {/* Display role icon */}
+            {/* Display role without icons */}
             {isMentor ? (
               <span className="flex items-center bg-orange-900/40 text-orange-400 px-2 py-0.5 rounded-full text-xs">
-                <FaChalkboardTeacher className="mr-1" size={10} />
                 Mentor
               </span>
             ) : (
               <span className="flex items-center bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded-full text-xs">
-                <FaGraduationCap className="mr-1" size={10} />
                 Student
               </span>
             )}

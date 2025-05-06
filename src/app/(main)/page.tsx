@@ -26,14 +26,31 @@ export default function Home() {
         
         // Transform the MongoDB data to match the PostType format
         const formattedPosts: PostType[] = data.posts.map((post: any) => {
-          // Log the post author data to check format
-          console.log(`Post ${post._id} author data:`, post.author);
+          // More detailed logging for debugging
+          console.log(`Post ${post._id} full data:`, post);
+          console.log(`Author data for post ${post._id}:`, post.author);
+          console.log(`Profile image for post ${post._id}:`, post.author.profileImage);
           
+          // Improved profile image handling - carefully validate the URL
+          let profileImage = null;
+          if (post.author.profileImage) {
+            const imageUrl = post.author.profileImage.trim();
+            if (imageUrl && 
+                (imageUrl.startsWith('http://') || 
+                 imageUrl.startsWith('https://') || 
+                 imageUrl.startsWith('/'))) {
+              profileImage = imageUrl;
+              console.log(`Validated profile image for post ${post._id}:`, profileImage);
+            } else {
+              console.warn(`Invalid profile image URL for post ${post._id}:`, imageUrl);
+            }
+          }
+            
           return {
             id: post._id,
             author: post.author.username || 'Anonymous',
             isVerified: post.author.isVerified || false,
-            profileImage: post.author.profileImage || '/images/default-profile.png',
+            profileImage,  // Use the validated image URL
             institution: (post.author.institution && 
                          post.author.institution !== 'Unknown Institution' && 
                          post.author.institution !== 'Default University') 

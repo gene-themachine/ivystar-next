@@ -9,6 +9,7 @@ export interface IPost extends Document {
     profileImage?: string;
     institution?: string;
     isVerified?: boolean;
+    role?: 'mentor' | 'student';
   };
   images?: string[];
   tags?: string[];
@@ -40,11 +41,19 @@ const postSchema = new Schema<IPost>(
         type: String,
         required: true,
       },
-      profileImage: String,
+      profileImage: {
+        type: String,
+        default: '/images/default-profile.png'
+      },
       institution: String,
       isVerified: {
         type: Boolean,
         default: false,
+      },
+      role: {
+        type: String,
+        enum: ['mentor', 'student'],
+        default: 'student'
       },
     },
     images: [String],

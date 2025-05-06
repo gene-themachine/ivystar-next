@@ -14,6 +14,7 @@ export interface IUser extends Document {
   college?: string;
   gradeLevel?: string;
   isVerified?: boolean;
+  posts?: string[]; // Array of post IDs
   createdAt: Date;
   updatedAt: Date;
 }
@@ -69,6 +70,10 @@ const userSchema = new Schema<IUser>(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    posts: {
+      type: [String], // Array of post IDs
+      default: [],
     }
   },
   { timestamps: true }

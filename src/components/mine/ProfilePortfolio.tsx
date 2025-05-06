@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Gallery from './Gallery';
 import WorkSampleForm from './WorkSampleForm';
+import { FaStar, FaRegStar } from 'react-icons/fa';
 
 export interface WorkSample {
   id: string;
@@ -12,6 +13,7 @@ export interface WorkSample {
   summary: string;     // Brief description for previews
   description: string; // Detailed description for the lightbox view
   imageUrl: string;
+  isHighlighted?: boolean; // New field to track highlighted project
 }
 
 interface ProfilePortfolioProps {
@@ -34,6 +36,7 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
     title: sample.title,
     summary: sample.summary,         // Added brief summary field
     description: sample.description,  // Full description for the lightbox
+    isHighlighted: sample.isHighlighted, // Add highlighted status to gallery
     width: 1200, // Default width
     height: 800  // Default height
   }));
@@ -50,7 +53,8 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
       // Create a new work sample with a unique ID
       const newSample: WorkSample = {
         id: Date.now().toString(), // Simple unique ID
-        ...sample
+        ...sample,
+        isHighlighted: false // New project is not highlighted by default
       };
       
       // Add the new sample to the existing ones
@@ -114,10 +118,42 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
     }
   };
   
+  // Handler for toggling the highlighted status of a project
+  const handleToggleHighlight = async (id: string) => {
+    try {
+      setIsProcessing(true);
+      
+      // Find the currently highlighted sample (if any)
+      const currentlyHighlighted = workSamples.find(sample => sample.isHighlighted);
+      
+      // Update all samples - remove highlight from currently highlighted,
+      // and add it to the newly highlighted one
+      const updatedSamples = workSamples.map(sample => ({
+        ...sample,
+        isHighlighted: sample.id === id ? true : false
+      }));
+      
+      // Save the updated samples
+      await onUpdateWorkSamples(updatedSamples);
+      
+      // Show confirmation
+      if (currentlyHighlighted?.id !== id) {
+        console.log(`Project "${updatedSamples.find(s => s.id === id)?.title}" is now highlighted`);
+      }
+    } catch (error) {
+      console.error('Error highlighting work sample:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
   // Find the work sample being edited, if any
   const editingSample = isEditingWorkSample 
     ? workSamples.find(sample => sample.id === isEditingWorkSample) 
     : undefined;
+    
+  // Find the currently highlighted sample (if any)
+  const highlightedSample = workSamples.find(sample => sample.isHighlighted);
 
   return (
     <ErrorBoundary
@@ -145,6 +181,37 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
             </button>
           )}
         </div>
+        
+        {/* Highlighted Project Section - only visible if there's a highlighted project */}
+        {highlightedSample && !isAddingWorkSample && !isEditingWorkSample && (
+          <div className="mb-8 bg-gray-800/60 p-4 rounded-xl border border-blue-800/30">
+            <div className="flex items-center gap-2 text-blue-400 mb-3">
+              <FaStar className="text-yellow-500" size={18} />
+              <h3 className="font-semibold">Highlighted Project</h3>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="sm:w-1/3 h-48 relative rounded-lg overflow-hidden">
+                <img
+                  src={highlightedSample.imageUrl}
+                  alt={highlightedSample.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="sm:w-2/3">
+                <h4 className="text-lg font-medium text-white mb-1">
+                  {highlightedSample.title}
+                </h4>
+                <p className="text-gray-300 text-sm mb-3">
+                  {highlightedSample.summary}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  {highlightedSample.description}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         
         {isAddingWorkSample && (
           <WorkSampleForm 
@@ -181,7 +248,7 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
                   Add Your First Sample
                 </button>
               </div>
-            ) : (
+            ) :
               <Suspense fallback={<div className="p-8 text-center">Loading gallery...</div>}>
                 <Gallery images={galleryImages} />
                 
@@ -192,13 +259,25 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
                     {workSamples.map(sample => (
                       <div key={sample.id} className="flex justify-between items-center bg-gray-800 p-3 rounded-lg">
                         <div className="flex-1 overflow-hidden">
-                          <span className="font-medium block">{sample.title}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{sample.title}</span>
+                            {sample.isHighlighted && <FaStar className="text-yellow-500" size={16} title="Highlighted Project" />}
+                          </div>
                           <span className="text-sm text-gray-400 block truncate">{sample.summary}</span>
                         </div>
                         <div className="flex gap-2 ml-4">
                           <button 
+                            onClick={() => handleToggleHighlight(sample.id)}
+                            className={`p-1.5 ${sample.isHighlighted ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
+                            title={sample.isHighlighted ? "Remove highlight" : "Highlight this project"}
+                            disabled={isProcessing}
+                          >
+                            {sample.isHighlighted ? <FaStar size={16} /> : <FaRegStar size={16} />}
+                          </button>
+                          <button 
                             onClick={() => setIsEditingWorkSample(sample.id)}
                             className="text-blue-400 hover:text-blue-300 p-1.5"
+                            disabled={isProcessing}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -207,6 +286,7 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
                           <button 
                             onClick={() => handleDeleteWorkSample(sample.id)}
                             className="text-red-400 hover:text-red-300 p-1.5"
+                            disabled={isProcessing}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -218,7 +298,7 @@ const ProfilePortfolio: React.FC<ProfilePortfolioProps> = ({
                   </div>
                 </div>
               </Suspense>
-            )}
+            }
           </>
         )}
       </div>
