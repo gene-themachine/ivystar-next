@@ -1,8 +1,8 @@
 export interface PostType {
   id: string;
   author: string;
-  isVerified: boolean;
-  profileImage: string;
+  isVerified?: boolean;
+  profileImage: string | null;
   institution: string;
   timeAgo: string;
   community: string;
@@ -14,6 +14,7 @@ export interface PostType {
   isLiked: boolean;
   isSaved: boolean;
   fieldOfStudy?: string;
+  images?: string[];
   hasMentorResponse?: boolean;
 }
 

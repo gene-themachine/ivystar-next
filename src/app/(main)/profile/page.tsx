@@ -39,7 +39,15 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [workSamples, setWorkSamples] = useState<Array<{
+    id: string;
+    title: string;
+    summary: string;
+    description: string;
+    imageUrl: string;
+  }>>([]);
   const backgroundInputRef = useRef<HTMLInputElement>(null) as React.RefObject<HTMLInputElement>;
+  const profileInputRef = useRef<HTMLInputElement>(null) as React.RefObject<HTMLInputElement>;
   const { startUpload } = useUploadThing("imageUploader");
   
   // Get display username from different sources with fallbacks
@@ -58,7 +66,6 @@ export default function ProfilePage() {
   const userRole = metadata?.role || 'student';
   console.log("User role from Clerk:", userRole); // Debug user role
   const gradeLevel = metadata?.gradeLevel || 'Freshman';
-  const workSamples = metadata?.workSamples || [];
   const isVerified = metadata?.isVerified || false; // Default to not verified
   
   // Initial profile data
@@ -84,6 +91,7 @@ export default function ProfilePage() {
   
   // Background file to upload
   const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
+  const [profileFile, setProfileFile] = useState<File | null>(null);
   
   // Update profile data when user data changes
   useEffect(() => {
@@ -98,6 +106,31 @@ export default function ProfilePage() {
       const userRole = metadata?.role || 'student';
       const gradeLevel = metadata?.gradeLevel || 'Freshman';
       const isVerified = metadata?.isVerified || false;
+      
+      // Fetch projects from MongoDB
+      const fetchProjects = async () => {
+        try {
+          const response = await fetch('/api/projects');
+          if (response.ok) {
+            const data = await response.json();
+            // Use MongoDB projects if available, fallback to Clerk metadata
+            const projects = data.projects && data.projects.length > 0 
+              ? data.projects 
+              : (metadata?.workSamples || []);
+            
+            setWorkSamples(projects);
+          } else {
+            // Fallback to Clerk metadata if MongoDB fetch fails
+            setWorkSamples(metadata?.workSamples || []);
+          }
+        } catch (error) {
+          console.error('Error fetching projects:', error);
+          // Fallback to Clerk metadata
+          setWorkSamples(metadata?.workSamples || []);
+        }
+      };
+      
+      fetchProjects();
       
       setProfileData(prev => ({
         ...prev,
@@ -135,6 +168,20 @@ export default function ProfilePage() {
     backgroundInputRef.current?.click();
   };
 
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfileFile(file);
+      // Create a temporary preview URL
+      const url = URL.createObjectURL(file);
+      setProfileData(prev => ({ ...prev, profileImage: url }));
+    }
+  };
+
+  const triggerProfileInput = () => {
+    profileInputRef.current?.click();
+  };
+
   const handleEditProfile = () => {
     setIsEditing(true);
   };
@@ -147,6 +194,7 @@ export default function ProfilePage() {
       backgroundImage: profileData.backgroundImage
     });
     setBackgroundFile(null);
+    setProfileFile(null);
     setIsEditing(false);
   };
   
@@ -160,10 +208,10 @@ export default function ProfilePage() {
     try {
       setIsUploading(true);
       let finalBackgroundUrl = editForm.backgroundImage;
+      let finalProfileUrl = profileData.profileImage;
       
-      // Check if we're replacing the background image
+      // Upload background photo if changed
       if (backgroundFile) {
-        // Upload new background image
         const uploadResult = await startUpload([backgroundFile]);
         if (uploadResult && uploadResult[0]) {
           finalBackgroundUrl = uploadResult[0].url;
@@ -216,20 +264,61 @@ export default function ProfilePage() {
         }
       }
       
+      // Upload profile photo if changed
+      if (profileFile) {
+        const uploadResult = await startUpload([profileFile]);
+        if (uploadResult && uploadResult[0]) {
+          finalProfileUrl = uploadResult[0].url;
+        }
+      }
+      
       // Update metadata in Clerk
       await user.update({
         unsafeMetadata: {
           ...user.unsafeMetadata,
           backgroundPhoto: finalBackgroundUrl,
+          profilePhoto: finalProfileUrl,
           college: editForm.school,
           bio: editForm.bio
         }
       });
       
+      // Update in MongoDB
+      try {
+        // Prepare data for MongoDB
+        const mongoData = {
+          clerkId: user.id,
+          username: profileData.username,
+          email: user.primaryEmailAddress?.emailAddress,
+          role: profileData.role,
+          college: editForm.school,
+          profilePhoto: finalProfileUrl,
+          backgroundPhoto: finalBackgroundUrl,
+          bio: editForm.bio,
+          gradeLevel: profileData.gradeLevel,
+        };
+        
+        // Update in MongoDB
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mongoData)
+        });
+        
+        if (!response.ok) {
+          console.error('MongoDB update failed:', await response.text());
+        } else {
+          console.log('Profile updated in MongoDB successfully');
+        }
+      } catch (mongoError) {
+        console.error('Error updating MongoDB:', mongoError);
+      }
+      
       // Update local state
       setProfileData(prev => ({
         ...prev,
         backgroundImage: finalBackgroundUrl,
+        profileImage: finalProfileUrl,
         school: editForm.school,
         bio: editForm.bio
       }));
@@ -262,6 +351,24 @@ export default function ProfilePage() {
           workSamples: samples
         }
       });
+      
+      // Update in MongoDB
+      try {
+        // Prepare projects for MongoDB
+        const response = await fetch('/api/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projects: samples })
+        });
+        
+        if (!response.ok) {
+          console.error('MongoDB project update failed:', await response.text());
+        } else {
+          console.log('Projects updated in MongoDB successfully');
+        }
+      } catch (mongoError) {
+        console.error('Error updating projects in MongoDB:', mongoError);
+      }
       
       // Update local state if needed
       console.log("Work samples updated successfully");
@@ -297,7 +404,7 @@ export default function ProfilePage() {
               school={isEditing ? editForm.school : profileData.school}
               hourlyRate={profileData.hourlyRate}
               timeOnPlatform={profileData.memberSince}
-              profileImage={profileData.profileImage}
+              profileImage={profileData.profileImage || "/images/default-profile.png"}
               backgroundImage={isEditing ? editForm.backgroundImage : profileData.backgroundImage}
               showMessageButton={false}
               role={profileData.role}
@@ -310,8 +417,11 @@ export default function ProfilePage() {
               isUploading={isUploading}
               username={profileData.username}
               backgroundInputRef={backgroundInputRef}
+              profileInputRef={profileInputRef}
               onBackgroundChange={handleBackgroundChange}
+              onProfileChange={handleProfileChange}
               onTriggerBackgroundInput={triggerBackgroundInput}
+              onTriggerProfileInput={triggerProfileInput}
               onCancelEdit={handleCancelEdit}
               onSaveProfile={handleSaveProfile}
             />

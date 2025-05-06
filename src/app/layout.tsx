@@ -54,6 +54,9 @@ const ChunkErrorHandling = () => {
   );
 };
 
+// Server-side only MongoDB initialization
+import './api/init-db';
+
 export default function RootLayout({
   children,
 }: Readonly<{

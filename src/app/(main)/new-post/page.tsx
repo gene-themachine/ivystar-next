@@ -4,16 +4,29 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { useUser } from '@clerk/nextjs'
+import { useUploadThing } from '@/lib/uploadthing'
 
 export default function NewPostPage() {
   const router = useRouter()
+  const { user, isLoaded, isSignedIn } = useUser()
+  const { startUpload, isUploading: isImageUploading } = useUploadThing("imageUploader")
+  
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [tags, setTags] = useState('')
+  const [community, setCommunity] = useState('')
   const [images, setImages] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Redirect if not signed in
+  if (isLoaded && !isSignedIn) {
+    router.push('/sign-in')
+    return null
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -53,14 +66,56 @@ export default function NewPostPage() {
     setError('')
 
     try {
-      // This would be replaced with your actual API call
-      console.log('Submitting post:', { title, content, images })
+      // Upload images if any
+      let uploadedImageUrls: string[] = []
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (images.length > 0) {
+        const uploadResults = await startUpload(images)
+        if (uploadResults) {
+          uploadedImageUrls = uploadResults.map((result: { url: string }) => result.url)
+        }
+      }
       
-      // Success - redirect to home or post view
+      // Parse tags - split by commas or spaces
+      const parsedTags = tags
+        .split(/[,\s]+/)
+        .map(tag => tag.trim())
+        .filter(tag => tag) // Remove empty tags
+        .map(tag => tag.startsWith('#') ? tag.substring(1) : tag) // Remove # if present
+      
+      // Create post data
+      const postData = {
+        title,
+        content,
+        images: uploadedImageUrls,
+        tags: parsedTags,
+        community: community || undefined
+      }
+      
+      // Save post to MongoDB via API
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(postData)
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create post')
+      }
+      
+      // Get the response data to display post info
+      const responseData = await response.json()
+      console.log('Post created successfully:', responseData.post)
+
+      // Show a success message
+      alert('Post created successfully!')
+
+      // Success - redirect to home
       router.push('/')
+      
     } catch (err) {
       console.error('Error creating post:', err)
       setError('Failed to create post. Please try again.')
@@ -115,6 +170,37 @@ export default function NewPostPage() {
               placeholder="Share your thoughts, questions, or ideas..."
               rows={6}
               className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-[#0387D0] transition resize-y"
+            />
+          </div>
+          
+          {/* Tags input */}
+          <div>
+            <label htmlFor="tags" className="block text-sm font-medium text-gray-300 mb-2">
+              Tags (Optional)
+            </label>
+            <input
+              type="text"
+              id="tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="e.g. academics, studytips, advice (separate with commas)"
+              className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-[#0387D0] transition"
+            />
+            <p className="mt-1 text-xs text-gray-400">Add relevant tags to help others discover your post</p>
+          </div>
+          
+          {/* Community input */}
+          <div>
+            <label htmlFor="community" className="block text-sm font-medium text-gray-300 mb-2">
+              Community (Optional)
+            </label>
+            <input
+              type="text"
+              id="community"
+              value={community}
+              onChange={(e) => setCommunity(e.target.value)}
+              placeholder="e.g. Study Tips, Research Opportunities"
+              className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-[#0387D0] transition"
             />
           </div>
           
@@ -192,9 +278,9 @@ export default function NewPostPage() {
             </button>
             <motion.button
               type="submit"
-              disabled={isSubmitting}
-              className={`px-4 py-2 bg-[#0387D0] text-white font-medium rounded-md hover:bg-[#0387D0]/90 transition ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
-              whileTap={{ scale: isSubmitting ? 1 : 0.97 }}
+              disabled={isSubmitting || isImageUploading}
+              className={`px-4 py-2 bg-[#0387D0] text-white font-medium rounded-md hover:bg-[#0387D0]/90 transition ${(isSubmitting || isImageUploading) ? 'opacity-70 cursor-not-allowed' : ''}`}
+              whileTap={{ scale: (isSubmitting || isImageUploading) ? 1 : 0.97 }}
             >
               {isSubmitting ? (
                 <span className="flex items-center">

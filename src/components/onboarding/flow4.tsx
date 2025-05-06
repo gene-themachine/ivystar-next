@@ -59,7 +59,7 @@ const Flow4: React.FC<Flow4Props> = ({
         {/* Preview of selected photo */}
         <div className="relative w-40 h-40 mx-auto rounded-full overflow-hidden">
           <div className="w-full h-full bg-gray-800 rounded-full overflow-hidden border-4 border-blue-600 flex items-center justify-center group">
-            {(previewUrl || profilePhoto !== '/default-profile.jpg') ? (
+            {(previewUrl) ? (
               <Image 
                 src={previewUrl || profilePhoto} 
                 alt="Profile photo preview" 

@@ -2,15 +2,18 @@
 
 import { useRef } from 'react';
 import Link from 'next/link';
-import { FaExternalLinkAlt, FaTimes, FaSave, FaEdit } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaTimes, FaSave, FaEdit, FaCamera } from 'react-icons/fa';
 
 interface ProfileActionsProps {
   isEditing: boolean;
   isUploading: boolean;
   username: string;
   backgroundInputRef: React.RefObject<HTMLInputElement>;
+  profileInputRef: React.RefObject<HTMLInputElement>;
   onBackgroundChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onProfileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onTriggerBackgroundInput: () => void;
+  onTriggerProfileInput: () => void;
   onCancelEdit: () => void;
   onSaveProfile: () => void;
 }
@@ -20,8 +23,11 @@ const ProfileActions: React.FC<ProfileActionsProps> = ({
   isUploading,
   username,
   backgroundInputRef,
+  profileInputRef,
   onBackgroundChange,
+  onProfileChange,
   onTriggerBackgroundInput,
+  onTriggerProfileInput,
   onCancelEdit,
   onSaveProfile
 }) => {
@@ -41,6 +47,26 @@ const ProfileActions: React.FC<ProfileActionsProps> = ({
             type="file"
             ref={backgroundInputRef}
             onChange={onBackgroundChange}
+            className="hidden"
+            accept="image/*"
+          />
+        </div>
+      )}
+      
+      {/* Edit Profile Photo Button (only when editing) */}
+      {isEditing && (
+        <div className="absolute bottom-12 left-32 sm:left-40 z-20">
+          <button
+            onClick={onTriggerProfileInput}
+            className="bg-gray-800 bg-opacity-70 hover:bg-opacity-100 text-white p-2 rounded-full h-10 w-10 flex items-center justify-center transition-all hover:scale-110"
+            title="Change Profile Photo"
+          >
+            <FaCamera />
+          </button>
+          <input
+            type="file"
+            ref={profileInputRef}
+            onChange={onProfileChange}
             className="hidden"
             accept="image/*"
           />

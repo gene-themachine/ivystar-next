@@ -199,6 +199,39 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
         await user.update({
           unsafeMetadata: userMetadata
         });
+        
+        // Save the same data to MongoDB
+        try {
+          // Prepare the data for MongoDB
+          const mongoData = {
+            clerkId: user.id,
+            username,
+            email: user.primaryEmailAddress?.emailAddress,
+            role: userRole,
+            interests,
+            profilePhoto: finalProfilePhotoUrl !== '/default-profile.jpg' ? finalProfilePhotoUrl : undefined,
+            college: userRole === 'mentor' ? college : undefined,
+            gradeLevel,
+            isVerified: userRole === 'mentor' ? false : undefined
+          };
+          
+          // Save to MongoDB via API
+          const response = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(mongoData)
+          });
+          
+          if (!response.ok) {
+            throw new Error(`MongoDB save failed: ${response.statusText}`);
+          }
+          
+          console.log('User data saved to MongoDB successfully');
+        } catch (mongoError) {
+          console.error('Error saving to MongoDB:', mongoError);
+          // Don't fail the entire process if MongoDB save fails
+          // Just log it and continue with Clerk data
+        }
       }
       
       // Also update our local store with all relevant info

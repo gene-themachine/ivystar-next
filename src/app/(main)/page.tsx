@@ -1,78 +1,148 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Post from '@/components/Post';
 import { PostType } from '@/types';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  // Sample post data
-  const [posts, setPosts] = useState<PostType[]>([
-    {
-      id: '1',
-      author: 'study_master42',
-      isVerified: true,
-      profileImage: '/images/profile1.png',
-      institution: 'Harvard University',
-      timeAgo: '2 hours ago',
-      community: 'Study Tips',
-      title: 'How I organized my study schedule for finals',
-      content: 'I found that breaking down my study sessions into 25-minute blocks with 5-minute breaks (Pomodoro technique) helped me maintain focus throughout the day. I created a detailed schedule for each subject and stuck to it rigorously for the two weeks leading up to finals.',
-      tags: ['studytips', 'productivity', 'finals'],
-      likes: 42,
-      comments: 12,
-      isLiked: false,
-      isSaved: false,
-      fieldOfStudy: 'Computer Science'
-    },
-    {
-      id: '2',
-      author: 'bio_researcher22',
-      isVerified: false,
-      profileImage: '/images/profile2.png',
-      institution: 'Stanford University',
-      timeAgo: '5 hours ago',
-      community: 'Research Opportunities',
-      title: 'Just got accepted to a summer research program!',
-      content: "I'm excited to share that I'll be joining the Biology department's summer research program! The application process was competitive, but I focused my personal statement on how this opportunity aligns with my career goals in biotechnology.",
-      tags: ['research', 'biology', 'achievement'],
-      likes: 87,
-      comments: 24,
-      isLiked: true,
-      isSaved: true,
-      fieldOfStudy: 'Biology'
-    },
-    {
-      id: '3',
-      author: 'academic_guide',
-      isVerified: true,
-      profileImage: '/images/profile3.png',
-      institution: 'Princeton University',
-      timeAgo: '1 day ago',
-      community: 'Admissions',
-      title: 'Tips for writing a compelling personal statement',
-      content: "After helping several students with their applications, I've noticed that the most memorable personal statements tell a coherent story rather than listing achievements. Focus on a few significant experiences that shaped your perspective and connect them to your academic interests.",
-      tags: ['admissions', 'personalstatement', 'advice'],
-      likes: 156,
-      comments: 43,
-      isLiked: false,
-      isSaved: false,
-      fieldOfStudy: 'English Literature'
-    }
-  ]);
+  const router = useRouter();
+  const [posts, setPosts] = useState<PostType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch posts when component mounts
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/posts');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts');
+        }
+        
+        const data = await response.json();
+        
+        // Transform the MongoDB data to match the PostType format
+        const formattedPosts: PostType[] = data.posts.map((post: any) => {
+          // Log the post author data to check format
+          console.log(`Post ${post._id} author data:`, post.author);
+          
+          return {
+            id: post._id,
+            author: post.author.username || 'Anonymous',
+            isVerified: post.author.isVerified || false,
+            profileImage: post.author.profileImage || '/images/default-profile.png',
+            institution: (post.author.institution && 
+                         post.author.institution !== 'Unknown Institution' && 
+                         post.author.institution !== 'Default University') 
+                         ? post.author.institution 
+                         : undefined,
+            timeAgo: formatTimeAgo(post.createdAt),
+            community: post.community || 'General',
+            title: post.title,
+            content: post.content,
+            tags: post.tags || [],
+            likes: post.likes || 0,
+            comments: post.comments || 0,
+            isLiked: false, // We'll implement this later
+            isSaved: false, // We'll implement this later
+            fieldOfStudy: (post.author.field && post.author.field !== 'N/A') 
+                         ? post.author.field 
+                         : undefined,
+            images: post.images || [], // Include the post images
+          };
+        });
+        
+        setPosts(formattedPosts);
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+        setError('Failed to load posts. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchPosts();
+  }, []);
 
   const handlePostClick = (id: string) => {
     console.log(`Post ${id} clicked`);
     // Navigate to post detail page in a real app
+    // router.push(`/post/${id}`);
   };
+
+  // Helper function to format time ago
+  function formatTimeAgo(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) {
+      return interval === 1 ? '1 year ago' : `${interval} years ago`;
+    }
+    
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) {
+      return interval === 1 ? '1 month ago' : `${interval} months ago`;
+    }
+    
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) {
+      return interval === 1 ? '1 day ago' : `${interval} days ago`;
+    }
+    
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) {
+      return interval === 1 ? '1 hour ago' : `${interval} hours ago`;
+    }
+    
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) {
+      return interval === 1 ? '1 minute ago' : `${interval} minutes ago`;
+    }
+    
+    return seconds < 10 ? 'just now' : `${Math.floor(seconds)} seconds ago`;
+  }
 
   return (
     <div className="bg-gray-950 min-h-screen">
       <div className="container mx-auto max-w-4xl py-8 px-4 sm:px-6">
-        <div className="space-y-6">
-          {posts.map(post => (
-            <Post key={post.id} {...post} onPostClick={handlePostClick} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+            <p className="mt-4 text-gray-400">Loading posts...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-center">
+            <p className="text-red-300">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-2 bg-red-800 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 transition"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-20">
+            <h2 className="text-xl font-bold text-gray-300 mb-2">No Posts Yet</h2>
+            <p className="text-gray-400 mb-6">Be the first to share something with the community!</p>
+            <button 
+              onClick={() => router.push('/new-post')} 
+              className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition"
+            >
+              Create Post
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {posts.map(post => (
+              <Post key={post.id} {...post} onPostClick={handlePostClick} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
