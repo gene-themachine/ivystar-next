@@ -9,12 +9,14 @@ export interface IUser extends Document {
   profilePhoto?: string;
   backgroundPhoto?: string;
   bio?: string;
+  hourlyRate?: number;
   projectPhoto?: string;
   projectDescription?: string;
   college?: string;
   gradeLevel?: string;
   isVerified?: boolean;
   posts?: string[]; // Array of post IDs
+  projects?: string[]; // Array of project IDs
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +57,10 @@ const userSchema = new Schema<IUser>(
     bio: {
       type: String,
     },
+    hourlyRate: {
+      type: Number,
+      default: 50,
+    },
     projectPhoto: {
       type: String,
     },
@@ -73,6 +79,10 @@ const userSchema = new Schema<IUser>(
     },
     posts: {
       type: [String], // Array of post IDs
+      default: [],
+    },
+    projects: {
+      type: [String], // Array of project IDs
       default: [],
     }
   },

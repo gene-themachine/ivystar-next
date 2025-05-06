@@ -24,7 +24,7 @@ type GradeLevel = string;
 
 const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const setUserData = useUserStore((state) => state.setUserData);
   const { startUpload } = useUploadThing("imageUploader");
   
@@ -275,6 +275,34 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
       setGradeLevel('College Student');
     }
   }, [userRole]);
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      // Register the user with default values when they first load the onboarding
+      registerUserWithDefaults();
+    }
+  }, [isLoaded, user]);
+
+  const registerUserWithDefaults = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to register user with defaults');
+      } else {
+        console.log('User registered with default bio and hourly rate');
+      }
+    } catch (error) {
+      console.error('Error registering user:', error);
+    }
+  };
 
   // Don't render anything if not open
   if (!isOpen) return null;

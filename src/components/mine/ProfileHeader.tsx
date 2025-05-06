@@ -121,6 +121,20 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   </span>
                 </div>
               )}
+              
+              {/* Stats row */}
+              <div className="flex flex-wrap gap-3 mt-2">
+                {role === 'mentor' && (
+                  <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
+                    <FaDollarSign className="text-green-400 mr-1" />
+                    <span className="text-green-400 font-medium">${hourlyRate.toFixed(2)}/hr</span>
+                  </div>
+                )}
+                <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
+                  <FaClock className="text-blue-400 mr-1" />
+                  <span className="text-blue-400 font-medium">{timeOnPlatform}</span>
+                </div>
+              </div>
             </div>
             
             {/* Message button */}

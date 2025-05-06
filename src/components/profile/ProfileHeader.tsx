@@ -14,6 +14,7 @@ interface ProfileHeaderProps {
   showMessageButton?: boolean;
   onMessageClick?: () => void;
   role?: 'mentor' | 'student';
+  gradeLevel?: string;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -27,7 +28,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   showMessageButton = true,
   onMessageClick,
   // For profile/[username] pages, we default to mentor as those are typically mentor profiles
-  role = 'mentor'
+  role = 'mentor',
+  gradeLevel
 }) => {
   console.log("Profile role received:", role); // Debug role
 
@@ -89,6 +91,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               }`}>
                 {role === 'mentor' ? 'Mentor' : 'Student'}
               </div>
+              
+              {/* Display Grade Level if available */}
+              {gradeLevel && (
+                <div className="px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-300">
+                  {gradeLevel}
+                </div>
+              )}
             </div>
             <div className="flex items-center text-gray-400 mt-2">
               <FaUniversity className="mr-2" />

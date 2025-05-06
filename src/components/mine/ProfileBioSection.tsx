@@ -10,9 +10,10 @@ interface ProfileBioSectionProps {
   editForm: {
     bio: string;
     school: string;
+    hourlyRate?: number;
   };
   onEditClick: () => void;
-  onFormChange: (field: 'bio' | 'school', value: string) => void;
+  onFormChange: (field: 'bio' | 'school' | 'hourlyRate', value: string | number) => void;
   role?: 'mentor' | 'student';
 }
 
@@ -43,18 +44,34 @@ const ProfileBioSection: React.FC<ProfileBioSectionProps> = ({
         {isEditing ? (
           <div>
             {role === 'mentor' && (
-              <div className="mb-4">
-                <label htmlFor="college" className="block text-sm font-medium text-gray-300 mb-1">
-                  School/College/University
-                </label>
-                <input
-                  type="text"
-                  id="college"
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={editForm.school}
-                  onChange={(e) => onFormChange('school', e.target.value)}
-                />
-              </div>
+              <>
+                <div className="mb-4">
+                  <label htmlFor="college" className="block text-sm font-medium text-gray-300 mb-1">
+                    School/College/University
+                  </label>
+                  <input
+                    type="text"
+                    id="college"
+                    className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={editForm.school}
+                    onChange={(e) => onFormChange('school', e.target.value)}
+                  />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-300 mb-1">
+                    Hourly Rate ($)
+                  </label>
+                  <input
+                    type="number"
+                    id="hourlyRate"
+                    min="1"
+                    step="1"
+                    className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={editForm.hourlyRate}
+                    onChange={(e) => onFormChange('hourlyRate', parseInt(e.target.value))}
+                  />
+                </div>
+              </>
             )}
             <div>
               <label htmlFor="bio" className="block text-sm font-medium text-gray-300 mb-1">Bio</label>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Project from '@/models/Project';
+import User from '@/models/User';
 import { currentUser } from '@clerk/nextjs/server';
 
 // GET handler to fetch all projects for a user
@@ -75,6 +76,18 @@ export async function POST(request: NextRequest) {
       }))
     );
     
+    // Get the project IDs to update the User document
+    const projectIds = createdProjects.map(project => project._id.toString());
+    
+    // Update the User document with the project IDs
+    const userUpdateResult = await User.findOneAndUpdate(
+      { clerkId: user.id },
+      { $set: { projects: projectIds } },
+      { new: true }
+    );
+    
+    console.log(`Updated user ${user.id} with ${projectIds.length} projects`);
+    
     // Log the highlighted project if there is one
     const highlightedProject = createdProjects.find(p => p.isHighlighted);
     if (highlightedProject) {
@@ -83,7 +96,8 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ 
       message: 'Projects saved successfully',
-      projects: createdProjects
+      projects: createdProjects,
+      userProjects: userUpdateResult?.projects || []
     }, { status: 200 });
   } catch (error) {
     console.error('Error saving projects:', error);
@@ -135,6 +149,14 @@ export async function DELETE(request: NextRequest) {
     
     // Delete the project
     await Project.findByIdAndDelete(projectId);
+    
+    // Update the User document to remove this project ID
+    await User.findOneAndUpdate(
+      { clerkId: user.id },
+      { $pull: { projects: projectId } }
+    );
+    
+    console.log(`Removed project ${projectId} from user ${user.id}`);
     
     return NextResponse.json({ 
       message: 'Project deleted successfully' 

@@ -22,6 +22,7 @@ interface UserMetadata {
   backgroundPhoto?: string;
   college?: string;
   bio?: string;
+  hourlyRate?: number;
   gradeLevel?: string;
   isVerified?: boolean; // Optional verification status for mentors
   workSamples?: {
@@ -70,13 +71,14 @@ export default function ProfilePage() {
   const gradeLevel = metadata?.gradeLevel || 'Freshman';
   const interests = metadata?.interests || []; // Get interests with empty array fallback
   const isVerified = metadata?.isVerified || false;
+  const hourlyRate = metadata?.hourlyRate || 50; // Get hourlyRate with default 50
   
   // Initial profile data
   const [profileData, setProfileData] = useState({
     username: displayUsername,
     isVerified: isVerified,
     school: college,
-    hourlyRate: 50,
+    hourlyRate: hourlyRate,
     memberSince: "January 2023",
     profileImage: profilePhoto,
     backgroundImage: backgroundPhoto as string | null,
@@ -92,6 +94,7 @@ export default function ProfilePage() {
     bio: bio,
     backgroundImage: backgroundPhoto as string | null,
     interests: interests,
+    hourlyRate: hourlyRate,
   });
   
   // Background file to upload
@@ -112,6 +115,7 @@ export default function ProfilePage() {
       const gradeLevel = metadata?.gradeLevel || 'Freshman';
       const interests = metadata?.interests || []; // Get interests with empty array fallback
       const isVerified = metadata?.isVerified || false;
+      const hourlyRate = metadata?.hourlyRate || 50; // Get hourlyRate with default 50
       
       // Fetch projects from MongoDB
       const fetchProjects = async () => {
@@ -185,6 +189,7 @@ export default function ProfilePage() {
         gradeLevel: gradeLevel,
         isVerified: isVerified,
         interests: interests,
+        hourlyRate: hourlyRate,
       }));
       
       setEditForm({
@@ -192,6 +197,7 @@ export default function ProfilePage() {
         bio: bio,
         backgroundImage: backgroundPhoto,
         interests: interests,
+        hourlyRate: hourlyRate,
       });
       
       setIsInitialized(true);
@@ -237,13 +243,14 @@ export default function ProfilePage() {
       bio: profileData.bio,
       backgroundImage: profileData.backgroundImage,
       interests: profileData.interests,
+      hourlyRate: profileData.hourlyRate,
     });
     setBackgroundFile(null);
     setProfileFile(null);
     setIsEditing(false);
   };
   
-  const handleFormChange = (field: 'bio' | 'school', value: string) => {
+  const handleFormChange = (field: 'bio' | 'school' | 'hourlyRate', value: string | number) => {
     console.log(`Updating ${field} to:`, value);
     setEditForm(prev => ({ ...prev, [field]: value }));
   };
@@ -331,6 +338,7 @@ export default function ProfilePage() {
           college: editForm.school,
           bio: editForm.bio,
           interests: editForm.interests,
+          hourlyRate: editForm.hourlyRate,
         }
       });
       
@@ -347,6 +355,7 @@ export default function ProfilePage() {
           bio: editForm.bio,
           interests: editForm.interests,
           gradeLevel: profileData.gradeLevel,
+          hourlyRate: editForm.hourlyRate,
         };
         
         // Update in MongoDB
@@ -373,6 +382,7 @@ export default function ProfilePage() {
         school: editForm.school,
         bio: editForm.bio,
         interests: editForm.interests,
+        hourlyRate: editForm.hourlyRate,
       }));
       
       setIsEditing(false);

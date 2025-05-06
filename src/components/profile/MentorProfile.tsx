@@ -10,6 +10,7 @@ interface MentorProfileProps {
   school: string;
   hourlyRate: number;
   joinedDate: string;
+  timeOnPlatform?: string;
   bio: string;
   profileImage: string;
   backgroundImage: string;
@@ -20,7 +21,12 @@ interface MentorProfileProps {
     description?: string;
     width: number;
     height: number;
+    isHighlighted?: boolean;
   }[];
+  clerkId?: string;
+  role?: 'mentor' | 'student';
+  gradeLevel?: string;
+  interests?: string[];
 }
 
 const MentorProfile: React.FC<MentorProfileProps> = ({
@@ -29,13 +35,18 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
   school,
   hourlyRate,
   joinedDate,
+  timeOnPlatform,
   bio,
   profileImage,
   backgroundImage,
-  portfolio
+  portfolio,
+  clerkId,
+  role = 'mentor',
+  gradeLevel,
+  interests = []
 }) => {
-  // Calculate time on platform
-  const getTimeOnPlatform = () => {
+  // Calculate time on platform only if not already provided
+  const calculatedTimeOnPlatform = timeOnPlatform || (() => {
     const joinDate = new Date(joinedDate);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - joinDate.getTime());
@@ -48,7 +59,7 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
     } else {
       return `${Math.floor(diffDays / 365)} years`;
     }
-  };
+  })();
 
   const handleMessageClick = () => {
     // This would typically open a message modal or navigate to message page
@@ -65,15 +76,38 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
           isVerified={isVerified}
           school={school}
           hourlyRate={hourlyRate}
-          timeOnPlatform={getTimeOnPlatform()}
+          timeOnPlatform={calculatedTimeOnPlatform}
           profileImage={profileImage}
           backgroundImage={backgroundImage}
           onMessageClick={handleMessageClick}
-          role="mentor"
+          role={role}
+          gradeLevel={gradeLevel}
         />
       
         {/* Bottom 40% of the page - Content sections */}
         <div className="mt-8">
+          {/* Interests Section - if available */}
+          {interests && interests.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Interests</h2>
+              <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
+                <div className="flex flex-wrap gap-2">
+                  {interests.map((interest, index) => (
+                    <div 
+                      key={index}
+                      className={`px-3 py-1 rounded-full text-sm font-medium
+                        ${role === 'mentor' 
+                          ? 'bg-orange-900/30 text-orange-400 border border-orange-700/30' 
+                          : 'bg-blue-900/30 text-blue-400 border border-blue-700/30'}`}
+                    >
+                      {interest}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Bio Section */}
           <div>
             <h2 className="text-xl font-semibold mb-4">About</h2>
@@ -83,23 +117,27 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
             </div>
           </div>
 
-          {/* Portfolio Gallery */}
-          <div className="mt-10">
-            <Gallery 
-              images={portfolio}
-              title="Work Samples"
-            />
-          </div>
-
-          {/* Reviews Section */}
-          <div className="mt-10 mb-6">
-            <h2 className="text-2xl font-bold mb-5">Student Reviews</h2>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <p className="text-gray-400 text-center py-4">
-                No reviews yet. Be the first to leave a review for this mentor!
-              </p>
+          {/* Portfolio Gallery - only show for mentors or if portfolio exists */}
+          {(role === 'mentor' || portfolio.length > 0) && (
+            <div className="mt-10">
+              <Gallery 
+                images={portfolio}
+                title="Work Samples"
+              />
             </div>
-          </div>
+          )}
+
+          {/* Reviews Section - only show for mentors */}
+          {role === 'mentor' && (
+            <div className="mt-10 mb-6">
+              <h2 className="text-2xl font-bold mb-5">Student Reviews</h2>
+              <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+                <p className="text-gray-400 text-center py-4">
+                  No reviews yet. Be the first to leave a review for this mentor!
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
