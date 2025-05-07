@@ -3,6 +3,7 @@ import {
   ClerkProvider,
 } from '@clerk/nextjs'
 import { Inter } from 'next/font/google'
+import { Toaster } from 'react-hot-toast'
 import './globals.css'
 
 const inter = Inter({
@@ -70,6 +71,29 @@ export default function RootLayout({
           <ChunkErrorHandling />
         </head>
         <body className={`${inter.variable} font-sans h-full antialiased`}>
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: '#1F2937',
+                color: '#F3F4F6',
+                border: '1px solid #374151',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#10B981',
+                  secondary: '#ECFDF5',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#EF4444',
+                  secondary: '#FEF2F2',
+                },
+              },
+            }}
+          />
           {children}
         </body>
       </html>

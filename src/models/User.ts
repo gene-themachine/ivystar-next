@@ -17,6 +17,9 @@ export interface IUser extends Document {
   isVerified?: boolean;
   posts?: string[]; // Array of post IDs
   projects?: string[]; // Array of project IDs
+  likedPosts?: string[]; // Array of liked post IDs
+  savedPosts?: string[]; // Array of saved post IDs
+  savedMentors?: string[]; // Array of saved mentor IDs (clerkIds)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -83,6 +86,18 @@ const userSchema = new Schema<IUser>(
     },
     projects: {
       type: [String], // Array of project IDs
+      default: [],
+    },
+    likedPosts: {
+      type: [String], // Array of liked post IDs
+      default: [],
+    },
+    savedPosts: {
+      type: [String], // Array of saved post IDs
+      default: [],
+    },
+    savedMentors: {
+      type: [String], // Array of saved mentor IDs (clerkIds)
       default: [],
     }
   },

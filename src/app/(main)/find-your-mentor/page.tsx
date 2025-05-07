@@ -191,6 +191,7 @@ export default function FindYourMentor() {
                   portfolio={portfolio}
                   bio={mentor.bio || 'Mentor at Ivystar'}
                   isVerified={mentor.isVerified || false}
+                  clerkId={mentor.clerkId}
                 />
               );
             })}

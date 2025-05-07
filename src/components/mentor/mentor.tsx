@@ -3,9 +3,9 @@
 import Image from 'next/image';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaBookmark } from 'react-icons/fa';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -31,6 +31,7 @@ interface MentorProps {
   profileImage?: string;
   portfolio?: PortfolioItem;
   isVerified?: boolean;
+  clerkId: string;
 }
 
 export default function Mentor({ 
@@ -41,11 +42,14 @@ export default function Mentor({
   bio,
   profileImage,
   portfolio,
-  isVerified = false
+  isVerified = false,
+  clerkId
 }: MentorProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [profileImageError, setProfileImageError] = useState(false);
   const [portfolioImageError, setPortfolioImageError] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Function to handle profile image errors
   const handleProfileImageError = () => {
@@ -56,14 +60,55 @@ export default function Mentor({
   const handlePortfolioImageError = () => {
     setPortfolioImageError(true);
   };
+
+  // Check if the mentor is saved
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      try {
+        const response = await fetch(`/api/users/${clerkId}/save`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsSaved(data.saved);
+        }
+      } catch (error) {
+        console.error('Error checking saved status:', error);
+      }
+    };
+
+    if (clerkId) {
+      checkSavedStatus();
+    }
+  }, [clerkId]);
+
+  // Toggle save status
+  const handleSave = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent link navigation
+    e.stopPropagation(); // Prevent event bubbling
+    
+    if (isLoading) return;
+    
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/users/${clerkId}/save`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setIsSaved(data.saved);
+      }
+    } catch (error) {
+      console.error('Error toggling save status:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   return (
-    <Link 
-      href={`/profile/${username}`} 
-      className="block group h-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="block group h-full">
       <motion.div 
         className={`${inter.className} bg-gray-900 text-white rounded-xl overflow-hidden shadow-sm border border-gray-800 transition-all duration-300 h-full flex flex-col`}
         whileHover={{ 
@@ -96,13 +141,30 @@ export default function Mentor({
                 </div>
               )}
             </div>
-            <div className="space-y-0.5">
-              <h3 className="font-bold text-lg text-white tracking-tight group-hover:text-blue-400 transition-colors flex items-center">
-                {username}
-                {isVerified && (
-                  <FaCheckCircle className="text-blue-500 ml-2 text-base" />
-                )}
-              </h3>
+            <div className="space-y-0.5 flex-grow">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg text-white tracking-tight group-hover:text-blue-400 transition-colors flex items-center">
+                  {username}
+                  {isVerified && (
+                    <FaCheckCircle className="text-blue-500 ml-2 text-base" />
+                  )}
+                </h3>
+                {/* Save button */}
+                <button 
+                  onClick={handleSave}
+                  className="text-lg focus:outline-none"
+                  aria-label={isSaved ? "Unsave mentor" : "Save mentor"}
+                  disabled={isLoading}
+                >
+                  <FaBookmark 
+                    className={`transition-colors ${
+                      isSaved 
+                        ? 'text-orange-500' 
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`} 
+                  />
+                </button>
+              </div>
               <div className="text-gray-400 text-sm">
                 {school}
               </div>
@@ -172,13 +234,13 @@ export default function Mentor({
           </div>
           
           {/* View Profile Button */}
-          <div className={`mt-4 overflow-hidden transition-all duration-300 ease-in-out ${isHovered ? 'max-h-10 opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm font-medium transition-colors">
+          <div className="mt-4">
+            <Link href={`/profile/${username}`} className="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm font-medium transition-colors">
               View Profile
-            </div>
+            </Link>
           </div>
         </div>
       </motion.div>
-    </Link>
+    </div>
   );
 }

@@ -84,7 +84,8 @@ const mockMentors = [
     hourlyRate: 45,
     tags: ['algorithms', 'data-structures', 'python', 'machine-learning'],
     profileImage: 'mentor1.jpg',
-    bio: 'Helping computer science students bridge the gap between theory and practical applications.'
+    bio: 'Helping computer science students bridge the gap between theory and practical applications.',
+    clerkId: 'user_2NNpCVb4d1K8ioI'
   },
   {
     username: 'ProfJones',
@@ -92,7 +93,8 @@ const mockMentors = [
     hourlyRate: 55,
     tags: ['quantum-mechanics', 'electromagnetism', 'thermodynamics', 'astrophysics'],
     profileImage: 'mentor2.jpg',
-    bio: 'Passionate about making complex physics concepts accessible to everyone.'
+    bio: 'Passionate about making complex physics concepts accessible to everyone.',
+    clerkId: 'user_1MMqUTc9f3L7jpK'
   }
 ]
 
@@ -105,7 +107,8 @@ const sampleMentors = [
     hourlyRate: 45,
     tags: ['Computer Science', 'Algorithms', 'Machine Learning', 'Python'],
     profileImage: '/images/mentors/mentor1.jpg',
-    bio: 'Computer Science professor with expertise in algorithm design and machine learning.'
+    bio: 'Computer Science professor with expertise in algorithm design and machine learning.',
+    clerkId: 'user_A1B2C3D4E5F6G7H8'
   },
   {
     id: '2',
@@ -114,7 +117,8 @@ const sampleMentors = [
     hourlyRate: 60,
     tags: ['Physics', 'Quantum Mechanics', 'Mathematics', 'Research'],
     profileImage: '/images/mentors/mentor2.jpg',
-    bio: 'Researcher in quantum physics with a passion for teaching complex theories in simple terms.'
+    bio: 'Researcher in quantum physics with a passion for teaching complex theories in simple terms.',
+    clerkId: 'user_H8G7F6E5D4C3B2A1'
   },
   // More sample mentors as needed
 ];
@@ -288,6 +292,7 @@ export default function SearchResultsPage() {
                         tags={mentor.tags}
                         profileImage={mentor.profileImage}
                         bio={mentor.bio}
+                        clerkId={mentor.clerkId}
                       />
                     ))}
                   </div>

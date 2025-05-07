@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Post from '@/components/Post';
 import { PostType } from '@/types';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 export default function Home() {
   const router = useRouter();
@@ -16,18 +17,25 @@ export default function Home() {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/posts');
+        const response = await fetch('/api/posts', {
+          // Include credentials to ensure cookies are sent for auth
+          credentials: 'include',
+          // Cache setting for fresh data
+          cache: 'no-store'
+        });
         
         if (!response.ok) {
           throw new Error('Failed to fetch posts');
         }
         
         const data = await response.json();
+        console.log('Raw posts data from API:', data.posts);
         
         // Transform the MongoDB data to match the PostType format
         const formattedPosts: PostType[] = data.posts.map((post: any) => {
           // More detailed logging for debugging
           console.log(`Post ${post._id} full data:`, post);
+          console.log(`Like status for post ${post._id}:`, post.isLiked);
           console.log(`Author data for post ${post._id}:`, post.author);
           console.log(`Profile image for post ${post._id}:`, post.author.profileImage);
           
@@ -63,8 +71,10 @@ export default function Home() {
             tags: post.tags || [],
             likes: post.likes || 0,
             comments: post.comments || 0,
-            isLiked: false, // We'll implement this later
-            isSaved: false, // We'll implement this later
+            // Use the isLiked property from the API response
+            isLiked: post.isLiked === true,
+            // Use the isSaved property from the API response
+            isSaved: post.isSaved === true,
             fieldOfStudy: (post.author.field && post.author.field !== 'N/A') 
                          ? post.author.field 
                          : undefined,
@@ -73,9 +83,11 @@ export default function Home() {
         });
         
         setPosts(formattedPosts);
+        console.log('Posts loaded successfully with like status');
       } catch (err) {
         console.error('Error fetching posts:', err);
         setError('Failed to load posts. Please try again later.');
+        toast.error('Could not load posts. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -86,8 +98,8 @@ export default function Home() {
 
   const handlePostClick = (id: string) => {
     console.log(`Post ${id} clicked`);
-    // Navigate to post detail page in a real app
-    // router.push(`/post/${id}`);
+    // Navigate to post detail page
+    router.push(`/post/${id}`);
   };
 
   // Helper function to format time ago

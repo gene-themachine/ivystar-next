@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { FaCheckCircle, FaUniversity, FaDollarSign, FaClock } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaCheckCircle, FaUniversity, FaDollarSign, FaClock, FaBookmark } from 'react-icons/fa';
 
 interface ProfileHeaderProps {
   username: string;
@@ -10,11 +11,12 @@ interface ProfileHeaderProps {
   hourlyRate: number;
   timeOnPlatform: string;
   profileImage: string;
-  backgroundImage?: string;
+  backgroundImage: string | null;
   showMessageButton?: boolean;
-  onMessageClick?: () => void;
+  onMessageClick: () => void;
   role?: 'mentor' | 'student';
   gradeLevel?: string;
+  clerkId?: string;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -27,24 +29,74 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   backgroundImage,
   showMessageButton = true,
   onMessageClick,
-  // For profile/[username] pages, we default to mentor as those are typically mentor profiles
   role = 'mentor',
-  gradeLevel
+  gradeLevel,
+  clerkId
 }) => {
-  console.log("Profile role received:", role); // Debug role
+  const [isImageError, setIsImageError] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleImageError = () => {
+    setIsImageError(true);
+  };
+
+  // Check if the mentor is saved
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      if (!clerkId || role !== 'mentor') return;
+      
+      try {
+        const response = await fetch(`/api/users/${clerkId}/save`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsSaved(data.saved);
+        }
+      } catch (error) {
+        console.error('Error checking saved status:', error);
+      }
+    };
+
+    checkSavedStatus();
+  }, [clerkId, role]);
+
+  // Toggle save status
+  const handleSave = async () => {
+    if (!clerkId || role !== 'mentor' || isLoading) return;
+    
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/users/${clerkId}/save`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setIsSaved(data.saved);
+      }
+    } catch (error) {
+      console.error('Error toggling save status:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-gray-900 rounded-xl overflow-hidden shadow-xl border border-gray-800">
       {/* Banner image */}
       <div className="relative h-64 overflow-hidden">
-        {backgroundImage ? (
+        {backgroundImage && !isImageError ? (
           <Image 
             src={backgroundImage}
-            alt="Profile background"
+            alt={`${username}'s background`}
             fill
             priority
             sizes="100vw"
             style={{ objectFit: 'cover', objectPosition: 'center' }}
+            onError={handleImageError}
           />
         ) : (
           <div className="absolute inset-0 bg-black"></div>
@@ -116,13 +168,27 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </div>
           
           {showMessageButton && (
-            <div className="mt-4 sm:mt-0">
+            <div className="mt-4 sm:mt-0 flex gap-2">
               <button 
                 onClick={onMessageClick}
                 className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition text-sm"
               >
                 Message
               </button>
+              
+              {role === 'mentor' && clerkId && (
+                <button 
+                  onClick={handleSave}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm
+                    ${isSaved 
+                      ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                      : 'bg-gray-800 hover:bg-gray-700 text-white'}`}
+                  disabled={isLoading}
+                >
+                  <FaBookmark className={isSaved ? 'text-white' : 'text-gray-400'} />
+                  {isSaved ? 'Saved' : 'Save'}
+                </button>
+              )}
             </div>
           )}
         </div>

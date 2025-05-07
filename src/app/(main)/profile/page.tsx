@@ -346,6 +346,9 @@ export default function ProfilePage() {
       
       // Update in MongoDB
       try {
+        // Always include hourlyRate for both mentors and students
+        const hourlyRate = editForm.hourlyRate;
+
         const mongoData = {
           clerkId: user.id,
           username: profileData.username,
@@ -357,7 +360,7 @@ export default function ProfilePage() {
           bio: editForm.bio,
           interests: editForm.interests,
           gradeLevel: profileData.gradeLevel,
-          hourlyRate: editForm.hourlyRate,
+          hourlyRate: hourlyRate, // Explicitly include hourlyRate for all users
         };
         
         // Update in MongoDB
@@ -371,6 +374,8 @@ export default function ProfilePage() {
           console.error('MongoDB update failed:', await response.text());
         } else {
           console.log('Profile updated in MongoDB successfully');
+          const result = await response.json();
+          console.log('Updated user data with hourlyRate:', result.user?.hourlyRate);
         }
       } catch (mongoError) {
         console.error('Error updating MongoDB:', mongoError);

@@ -9,8 +9,110 @@ export async function GET() {
   try {
     await connectDB();
     
+    // Get current user for checking liked status
+    const user = await currentUser();
+    let userLikedPosts: string[] = [];
+    let userSavedPosts: string[] = [];
+    
+    // If user is logged in, get their liked and saved posts
+    if (user) {
+      const userDoc = await User.findOne({ clerkId: user.id });
+      userLikedPosts = userDoc?.likedPosts || [];
+      userSavedPosts = userDoc?.savedPosts || [];
+      console.log(`Found user ${user.id} with ${userLikedPosts.length} liked posts and ${userSavedPosts.length} saved posts`);
+    }
+    
     // Get all posts, sorted by most recent first
     const posts = await Post.find({}).sort({ createdAt: -1 });
+    
+    // Add isLiked and isSaved fields to each post
+    const postsWithUserStatus = posts.map(post => {
+      const postId = post._id.toString();
+      const postObj = post.toObject();
+      
+      // Check if post is liked in two ways for verification
+      const isLikedByArray = user ? post.likedBy.includes(user.id) : false;
+      const isLikedByUserDoc = userLikedPosts.includes(postId);
+      
+      // Check if post is saved in two ways for verification
+      const isSavedByArray = user ? post.savedBy?.includes(user.id) : false;
+      const isSavedByUserDoc = userSavedPosts.includes(postId);
+      
+      // Log any discrepancies for debugging
+      if (isLikedByArray !== isLikedByUserDoc) {
+        console.warn(
+          `Like status mismatch for post ${postId}: ` +
+          `By likedBy array: ${isLikedByArray}, ` +
+          `By user's likedPosts: ${isLikedByUserDoc}`
+        );
+      }
+      
+      if (isSavedByArray !== isSavedByUserDoc) {
+        console.warn(
+          `Save status mismatch for post ${postId}: ` +
+          `By savedBy array: ${isSavedByArray}, ` +
+          `By user's savedPosts: ${isSavedByUserDoc}`
+        );
+      }
+      
+      // Ensure consistency in both user and post collections for likes
+      if (user && isLikedByArray !== isLikedByUserDoc) {
+        console.log(`Fixing like status inconsistency for post ${postId}...`);
+        // We'll trust the post.likedBy as the source of truth
+        // This fixes the issue silently in the background
+        if (isLikedByArray && !isLikedByUserDoc) {
+          // Add missing post ID to user's likedPosts
+          User.updateOne(
+            { clerkId: user.id },
+            { $addToSet: { likedPosts: postId } }
+          ).catch(err => console.error('Error updating user liked posts:', err));
+        } else if (!isLikedByArray && isLikedByUserDoc) {
+          // Remove post ID from user's likedPosts
+          User.updateOne(
+            { clerkId: user.id },
+            { $pull: { likedPosts: postId } }
+          ).catch(err => console.error('Error updating user liked posts:', err));
+        }
+      }
+      
+      // Ensure consistency in both user and post collections for saves
+      if (user && isSavedByArray !== isSavedByUserDoc) {
+        console.log(`Fixing save status inconsistency for post ${postId}...`);
+        // We'll trust the post.savedBy as the source of truth
+        // This fixes the issue silently in the background
+        if (isSavedByArray && !isSavedByUserDoc) {
+          // Add missing post ID to user's savedPosts
+          User.updateOne(
+            { clerkId: user.id },
+            { $addToSet: { savedPosts: postId } }
+          ).catch(err => console.error('Error updating user saved posts:', err));
+        } else if (!isSavedByArray && isSavedByUserDoc) {
+          // Remove post ID from user's savedPosts
+          User.updateOne(
+            { clerkId: user.id },
+            { $pull: { savedPosts: postId } }
+          ).catch(err => console.error('Error updating user saved posts:', err));
+        }
+      }
+      
+      // For the UI, use the arrays as source of truth
+      const isLiked = isLikedByArray;
+      const isSaved = isSavedByArray;
+      
+      // Log liked and saved status
+      if (user && (isLiked || isSaved)) {
+        console.log(`Post ${postId} status for user ${user.id}: liked=${isLiked}, saved=${isSaved}`);
+      }
+      
+      return {
+        ...postObj,
+        isLiked,
+        isSaved,
+        // Ensure likes and saves counts are accurate
+        likes: post.likedBy.length,
+        saves: post.savedBy?.length || 0
+      };
+    });
     
     // Log more detailed post info for debugging
     if (posts.length > 0) {
@@ -38,7 +140,7 @@ export async function GET() {
       }
     }
     
-    return NextResponse.json({ posts }, { status: 200 });
+    return NextResponse.json({ posts: postsWithUserStatus }, { status: 200 });
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json(
@@ -104,6 +206,9 @@ export async function POST(request: NextRequest) {
       tags: tags || [],
       community,
       likes: 0,
+      likedBy: [], // Initialize empty likedBy array
+      saves: 0,    // Initialize saves count
+      savedBy: [], // Initialize empty savedBy array
       comments: 0,
     });
     

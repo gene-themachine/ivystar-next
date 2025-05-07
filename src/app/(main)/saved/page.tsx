@@ -1,140 +1,204 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Post from '@/components/Post';
 import Mentor from '@/components/mentor/mentor';
 import { PostType } from '@/types';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+
+interface MentorType {
+  _id: string;
+  clerkId: string;
+  username: string;
+  school: string;
+  hourlyRate: number;
+  tags: string[];
+  profileImage: string;
+  bio?: string;
+  isVerified?: boolean;
+  projects?: any[];
+}
 
 export default function Saved() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('Posts');
-  
-  // Sample post data
-  const [savedPosts, setSavedPosts] = useState<PostType[]>([
-    {
-      id: '1',
-      author: 'study_master42',
-      isVerified: true,
-      profileImage: '/images/profile1.png',
-      institution: 'Harvard University',
-      timeAgo: '2 hours ago',
-      community: 'Study Tips',
-      title: 'How I organized my study schedule for finals',
-      content: 'I found that breaking down my study sessions into 25-minute blocks with 5-minute breaks (Pomodoro technique) helped me maintain focus throughout the day. I created a detailed schedule for each subject and stuck to it rigorously for the two weeks leading up to finals.',
-      tags: ['studytips', 'productivity', 'finals'],
-      likes: 42,
-      comments: 12,
-      isLiked: false,
-      isSaved: true,
-      fieldOfStudy: 'Computer Science'
-    },
-    {
-      id: '2',
-      author: 'bio_researcher22',
-      isVerified: false,
-      profileImage: '/images/profile2.png',
-      institution: 'Stanford University',
-      timeAgo: '5 hours ago',
-      community: 'Research Opportunities',
-      title: 'Just got accepted to a summer research program!',
-      content: "I'm excited to share that I'll be joining the Biology department's summer research program! The application process was competitive, but I focused my personal statement on how this opportunity aligns with my career goals in biotechnology.",
-      tags: ['research', 'biology', 'achievement'],
-      likes: 87,
-      comments: 24,
-      isLiked: true,
-      isSaved: true,
-      fieldOfStudy: 'Biology'
-    },
-    {
-      id: '3',
-      author: 'academic_guide',
-      isVerified: true,
-      profileImage: '/images/profile3.png',
-      institution: 'Princeton University',
-      timeAgo: '1 day ago',
-      community: 'Admissions',
-      title: 'Tips for writing a compelling personal statement',
-      content: "After helping several students with their applications, I've noticed that the most memorable personal statements tell a coherent story rather than listing achievements. Focus on a few significant experiences that shaped your perspective and connect them to your academic interests.",
-      tags: ['admissions', 'personalstatement', 'advice'],
-      likes: 156,
-      comments: 43,
-      isLiked: false,
-      isSaved: true,
-      fieldOfStudy: 'English Literature'
-    }
-  ]);
+  const [savedPosts, setSavedPosts] = useState<PostType[]>([]);
+  const [savedMentors, setSavedMentors] = useState<MentorType[]>([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const [isLoadingMentors, setIsLoadingMentors] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample saved mentors data using same format as find-your-mentor page
-  const mentors = [
-    {
-      username: 'code_ninja',
-      school: 'Harvard University',
-      hourlyRate: 45,
-      tags: ['Full Stack', 'React', 'Node.js', 'TypeScript', 'AWS', 'System Design'],
-      profileImage: 'profile1.png',
-      bio: 'Building applications that solve real problems is my passion.',
-      portfolio: {
-        src: '/images/screenshot1.png',
-        thumbnail: '/images/screenshot1.png',
-        title: 'Skincare Website',
-        description: 'A modern skincare product website with personalized recommendations',
-        width: 1200,
-        height: 800
+  // Fetch saved posts when component mounts
+  useEffect(() => {
+    const fetchSavedPosts = async () => {
+      try {
+        setIsLoadingPosts(true);
+        
+        // First get the current user's saved posts
+        const response = await fetch('/api/user/saved-posts', {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            // User is not logged in, redirect to login
+            router.push('/sign-in');
+            return;
+          }
+          throw new Error('Failed to fetch saved posts');
+        }
+        
+        const data = await response.json();
+        console.log('Saved posts data from API:', data);
+        
+        // If no saved posts, set empty array
+        if (!data.posts || !Array.isArray(data.posts) || data.posts.length === 0) {
+          setSavedPosts([]);
+          setIsLoadingPosts(false);
+          return;
+        }
+        
+        // Transform the MongoDB data to match the PostType format
+        const formattedPosts: PostType[] = data.posts.map((post: any) => {
+          // More detailed logging for debugging
+          console.log(`Saved post ${post._id}:`, post);
+          
+          // Improved profile image handling - carefully validate the URL
+          let profileImage = null;
+          if (post.author.profileImage) {
+            const imageUrl = post.author.profileImage.trim();
+            if (imageUrl && 
+                (imageUrl.startsWith('http://') || 
+                 imageUrl.startsWith('https://') || 
+                 imageUrl.startsWith('/'))) {
+              profileImage = imageUrl;
+            }
+          }
+            
+          return {
+            id: post._id,
+            author: post.author.username || 'Anonymous',
+            isVerified: post.author.isVerified || false,
+            profileImage, 
+            institution: (post.author.institution && 
+                         post.author.institution !== 'Unknown Institution' && 
+                         post.author.institution !== 'Default University') 
+                         ? post.author.institution 
+                         : undefined,
+            timeAgo: formatTimeAgo(post.createdAt),
+            community: post.community || 'General',
+            title: post.title,
+            content: post.content,
+            tags: post.tags || [],
+            likes: post.likes || 0,
+            comments: post.comments || 0,
+            isLiked: post.isLiked || false,
+            isSaved: true, // These are saved posts so always set to true
+            fieldOfStudy: (post.author.field && post.author.field !== 'N/A') 
+                         ? post.author.field 
+                         : undefined,
+            images: post.images || [],
+          };
+        });
+        
+        setSavedPosts(formattedPosts);
+        console.log('Saved posts loaded successfully');
+      } catch (err) {
+        console.error('Error fetching saved posts:', err);
+        setError('Failed to load saved posts. Please try again later.');
+        toast.error('Could not load saved posts. Please try again.');
+      } finally {
+        setIsLoadingPosts(false);
       }
-    },
-    {
-      username: 'algo_master',
-      school: 'Princeton University',
-      hourlyRate: 60,
-      tags: ['Algorithms', 'Data Structures', 'Competitive Programming', 'Interview Prep', 'System Design', 'Python'],
-      profileImage: 'profile2.png',
-      bio: 'Breaking complex problems into manageable components with proven strategies.',
-      portfolio: {
-        src: '/images/screenshot2.png',
-        thumbnail: '/images/screenshot2.png',
-        title: 'Social Media App',
-        description: 'Mobile app for creative content sharing and community building',
-        width: 1200,
-        height: 800
+    };
+    
+    fetchSavedPosts();
+  }, [router]);
+
+  // Fetch saved mentors when component mounts or tab changes to Mentors
+  useEffect(() => {
+    // Only fetch if the Mentors tab is active
+    if (activeTab !== 'Mentors') return;
+    
+    const fetchSavedMentors = async () => {
+      try {
+        setIsLoadingMentors(true);
+        
+        const response = await fetch('/api/user/saved-mentors', {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            // User is not logged in, redirect to login
+            router.push('/sign-in');
+            return;
+          }
+          throw new Error('Failed to fetch saved mentors');
+        }
+        
+        const data = await response.json();
+        console.log('Saved mentors data from API:', data);
+        
+        if (!data.mentors || !Array.isArray(data.mentors)) {
+          setSavedMentors([]);
+        } else {
+          setSavedMentors(data.mentors);
+        }
+      } catch (err) {
+        console.error('Error fetching saved mentors:', err);
+        setError('Failed to load saved mentors. Please try again later.');
+        toast.error('Could not load saved mentors. Please try again.');
+      } finally {
+        setIsLoadingMentors(false);
       }
-    },
-    {
-      username: 'design_pro',
-      school: 'Columbia University',
-      hourlyRate: 55,
-      tags: ['UX/UI Design', 'Product Design', 'User Research', 'Figma', 'Design Systems', 'Prototyping'],
-      profileImage: 'profile3.png',
-      bio: 'Guiding design from research to prototyping with evidence-based decisions.',
-      portfolio: {
-        src: '/images/screenshot3.png',
-        thumbnail: '/images/screenshot3.png',
-        title: 'Pet Walker Service',
-        description: 'Website for connecting pet owners with local pet walkers',
-        width: 1200,
-        height: 800
-      }
-    },
-    {
-      username: 'cybersec_hacker',
-      school: 'Dartmouth College',
-      hourlyRate: 70,
-      tags: ['Cybersecurity', 'Ethical Hacking', 'Penetration Testing', 'Cryptography', 'Network Security', 'Secure Coding'],
-      profileImage: 'profile3.png',
-      bio: 'Teaching offensive and defensive security tactics for robust system design.',
-      portfolio: {
-        src: '/images/screenshot4.png',
-        thumbnail: '/images/screenshot4.png',
-        title: 'Finance Dashboard',
-        description: 'Personal finance management app with intuitive interface',
-        width: 1200,
-        height: 800
-      }
-    }
-  ];
+    };
+    
+    fetchSavedMentors();
+  }, [activeTab, router]);
 
   const handlePostClick = (id: string) => {
     console.log(`Post ${id} clicked`);
-    // Navigate to post detail page in a real app
+    // Navigate to post detail page
+    router.push(`/post/${id}`);
   };
+
+  // Helper function to format time ago
+  function formatTimeAgo(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) {
+      return interval === 1 ? '1 year ago' : `${interval} years ago`;
+    }
+    
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) {
+      return interval === 1 ? '1 month ago' : `${interval} months ago`;
+    }
+    
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) {
+      return interval === 1 ? '1 day ago' : `${interval} days ago`;
+    }
+    
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) {
+      return interval === 1 ? '1 hour ago' : `${interval} hours ago`;
+    }
+    
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) {
+      return interval === 1 ? '1 minute ago' : `${interval} minutes ago`;
+    }
+    
+    return seconds < 10 ? 'just now' : `${Math.floor(seconds)} seconds ago`;
+  }
 
   return (
     <div className="bg-gray-950 min-h-screen">
@@ -167,7 +231,22 @@ export default function Saved() {
         {/* Tab Content */}
         {activeTab === 'Posts' && (
           <>
-            {savedPosts.length > 0 ? (
+            {isLoadingPosts ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+                <p className="mt-4 text-gray-400">Loading saved posts...</p>
+              </div>
+            ) : error ? (
+              <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-center">
+                <p className="text-red-300">{error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-2 bg-red-800 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 transition"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : savedPosts.length > 0 ? (
               <div className="space-y-6">
                 {savedPosts.map(post => (
                   <Post key={post.id} {...post} onPostClick={handlePostClick} />
@@ -176,7 +255,10 @@ export default function Saved() {
             ) : (
               <div className="text-center py-16">
                 <p className="text-gray-400 mb-4">You haven't saved any posts yet.</p>
-                <button className="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded">
+                <button 
+                  className="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded"
+                  onClick={() => router.push('/')}
+                >
                   Browse Posts
                 </button>
               </div>
@@ -186,25 +268,60 @@ export default function Saved() {
 
         {activeTab === 'Mentors' && (
           <>
-            {mentors.length > 0 ? (
+            {isLoadingMentors ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+                <p className="mt-4 text-gray-400">Loading saved mentors...</p>
+              </div>
+            ) : error ? (
+              <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-center">
+                <p className="text-red-300">{error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-2 bg-red-800 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 transition"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : savedMentors.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {mentors.map((mentor, index) => (
-                  <Mentor
-                    key={index}
-                    username={mentor.username}
-                    school={mentor.school}
-                    hourlyRate={mentor.hourlyRate}
-                    tags={mentor.tags}
-                    profileImage={mentor.profileImage}
-                    portfolio={mentor.portfolio}
-                    bio={mentor.bio}
-                  />
-                ))}
+                {savedMentors.map((mentor) => {
+                  // Find the mentor's highlighted project if any
+                  const highlightedProject = mentor.projects?.find(project => project.isHighlighted);
+                  
+                  // Prepare portfolio data if a highlighted project exists
+                  const portfolio = highlightedProject ? {
+                    src: highlightedProject.imageUrl,
+                    thumbnail: highlightedProject.imageUrl,
+                    title: highlightedProject.title,
+                    description: highlightedProject.description || highlightedProject.summary,
+                    width: 1200,
+                    height: 800
+                  } : undefined;
+                  
+                  return (
+                    <Mentor
+                      key={mentor._id}
+                      username={mentor.username}
+                      school={mentor.school}
+                      hourlyRate={mentor.hourlyRate}
+                      tags={mentor.tags}
+                      profileImage={mentor.profileImage}
+                      portfolio={portfolio}
+                      bio={mentor.bio}
+                      isVerified={mentor.isVerified}
+                      clerkId={mentor.clerkId}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-16">
                 <p className="text-gray-400 mb-4">You haven't saved any mentors yet.</p>
-                <button className="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded">
+                <button 
+                  className="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded"
+                  onClick={() => router.push('/find-your-mentor')}
+                >
                   Find Mentors
                 </button>
               </div>

@@ -82,6 +82,7 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
           onMessageClick={handleMessageClick}
           role={role}
           gradeLevel={gradeLevel}
+          clerkId={clerkId}
         />
       
         {/* Bottom 40% of the page - Content sections */}
