@@ -188,22 +188,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Early Access Button */}
-      <motion.div 
-        className={`mt-auto mb-4 ${inter.variable}`}
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-      >
-        <motion.a 
-          href="https://mailchi.mp/57bc5a1b13d4/soft-launch" 
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`w-full flex items-center justify-center bg-transparent hover:bg-orange-500/10 py-3 px-4 rounded-2xl text-orange-400 font-medium transition-all duration-150 ease-out shadow-sm hover:shadow border-2 border-orange-500 text-center ${inter.className}`}
-          whileTap={{ scale: 0.97 }}
-        >
-          Sign Up for Early Access
-        </motion.a>
-      </motion.div>
+  
 
       {isLoaded && user ? (
         <div className="pt-4 border-t border-gray-700">

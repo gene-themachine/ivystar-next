@@ -167,7 +167,7 @@ export default function SignUpPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <div className="max-w-md mx-auto w-full backdrop-blur-sm bg-black/70 p-8 rounded-xl transform scale-90 origin-center">
+          <div className="max-w-md mx-auto w-full backdrop-blur-sm bg-transparent p-8 rounded-xl transform scale-90 origin-center">
             <motion.div 
               className="flex items-center gap-4 mb-6"
               initial={{ opacity: 0, y: -20 }}
