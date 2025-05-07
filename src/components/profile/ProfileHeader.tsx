@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { FaCheckCircle, FaUniversity, FaDollarSign, FaClock, FaBookmark } from 'react-icons/fa';
+import { FaCheckCircle, FaUniversity, FaDollarSign, FaBookmark } from 'react-icons/fa';
 
 interface ProfileHeaderProps {
   username: string;
@@ -160,10 +160,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 <FaDollarSign className="text-green-400 mr-1" />
                 <span className="text-green-400 font-medium">${hourlyRate.toFixed(2)}/hr</span>
               </div>
-              <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
-                <FaClock className="text-blue-400 mr-1" />
-                <span className="text-blue-400 font-medium">{timeOnPlatform}</span>
-              </div>
+              {timeOnPlatform && (
+                <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
+                  <span className="text-blue-400 font-medium">{timeOnPlatform}</span>
+                </div>
+              )}
             </div>
           </div>
           

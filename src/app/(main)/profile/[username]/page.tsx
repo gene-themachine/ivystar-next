@@ -54,27 +54,6 @@ const getMentorData = async (username: string) => {
         }))
       : []; // Empty array instead of placeholders
     
-    // Format the date for display
-    const joinDate = user.createdAt 
-      ? new Date(user.createdAt).toISOString().split('T')[0] 
-      : '2023-01-01';
-    
-    // Calculate time on platform
-    const getTimeOnPlatform = () => {
-      const joinDateObj = new Date(joinDate);
-      const now = new Date();
-      const diffTime = Math.abs(now.getTime() - joinDateObj.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays < 30) {
-        return `${diffDays} days`;
-      } else if (diffDays < 365) {
-        return `${Math.floor(diffDays / 30)} months`;
-      } else {
-        return `${Math.floor(diffDays / 365)} years`;
-      }
-    };
-    
     // Default bio matching personal profile
     const defaultBio = `I'm a member of the Ivystar community passionate about education and collaboration.`;
     
@@ -84,8 +63,8 @@ const getMentorData = async (username: string) => {
       isVerified: user.isVerified || false,
       school: user.college || 'Default University',
       hourlyRate: user.hourlyRate || 50,
-      joinedDate: joinDate,
-      timeOnPlatform: getTimeOnPlatform(),
+      joinedDate: "",
+      timeOnPlatform: "",
       bio: user.bio || defaultBio,
       profileImage: user.profilePhoto || "/images/default-profile.png",
       backgroundImage: user.backgroundPhoto || null, // Using null for black background fallback

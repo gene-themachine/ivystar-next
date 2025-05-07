@@ -80,7 +80,6 @@ export default function ProfilePage() {
     isVerified: isVerified,
     school: college,
     hourlyRate: hourlyRate,
-    memberSince: "January 2023",
     profileImage: profilePhoto,
     backgroundImage: backgroundPhoto as string | null,
     bio: bio,
@@ -511,7 +510,7 @@ export default function ProfilePage() {
               isVerified={profileData.isVerified}
               school={isEditing ? editForm.school : profileData.school}
               hourlyRate={profileData.hourlyRate}
-              timeOnPlatform={profileData.memberSince}
+              timeOnPlatform=""
               profileImage={profileData.profileImage || "/images/default-profile.png"}
               backgroundImage={isEditing ? editForm.backgroundImage : profileData.backgroundImage}
               showMessageButton={false}

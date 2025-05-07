@@ -33,7 +33,6 @@ interface PostDetail {
   };
   images?: string[];
   tags?: string[];
-  community?: string;
   likes: number;
   likedBy: string[];
   comments: number;
@@ -175,7 +174,7 @@ export default function PostDetailPage() {
     }
   };
   
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!commentText.trim()) {
@@ -183,12 +182,44 @@ export default function PostDetailPage() {
       return;
     }
     
-    // In a real app, we would send the comment to the server
-    // For now, we'll just display a toast and reset the input
-    toast.success('Comment added successfully!');
-    setCommentText('');
-    
-    // If we had real comments API, we'd add the new comment to the list
+    try {
+      setIsSubmittingComment(true);
+      
+      const response = await fetch(`/api/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: commentText }),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+      
+      const data = await response.json();
+      
+      // Update local state with the new comment
+      setPost(prevPost => {
+        if (!prevPost) return null;
+        
+        return {
+          ...prevPost,
+          comments: prevPost.comments + 1,
+          commentsList: [data.comment, ...prevPost.commentsList]
+        };
+      });
+      
+      // Clear the input
+      setCommentText('');
+      toast.success('Comment added successfully!');
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      toast.error('Failed to add comment. Please try again.');
+    } finally {
+      setIsSubmittingComment(false);
+    }
   };
   
   const handleGoBack = () => {
@@ -278,13 +309,6 @@ export default function PostDetailPage() {
   const isMentor = post.author.role === 'mentor';
   const hasImages = post.images && post.images.length > 0;
   
-  // Format date for display
-  const postDate = new Date(post.createdAt).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
   return (
     <div className="bg-gray-950 min-h-screen">
       <div className="container mx-auto max-w-4xl py-8 px-4 sm:px-6">
@@ -329,7 +353,7 @@ export default function PostDetailPage() {
                 {post.author.institution && post.author.institution !== 'Unknown Institution' && (
                   <span>{post.author.institution}</span>
                 )}
-                <span className="text-gray-500 text-xs block">{postDate} • {post.community || 'General'}</span>
+                <span className="text-gray-500 text-xs block"></span>
               </div>
             </div>
           </div>

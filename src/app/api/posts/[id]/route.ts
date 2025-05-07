@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Post from '@/models/Post';
 import User from '@/models/User';
+import Comment from '@/models/Comment';
 import { currentUser } from '@clerk/nextjs/server';
 
 // GET request to fetch a post by ID
@@ -38,18 +39,51 @@ export async function GET(
     // Convert to object for easier manipulation
     const postObj = post.toObject();
     
+    // Fetch real comments for this post
+    const comments = await Comment.find({ postId }).sort({ createdAt: -1 });
+    
+    // Transform comments to client-friendly format
+    const formattedComments = comments.map(comment => {
+      const createdAt = new Date(comment.createdAt);
+      const now = new Date();
+      
+      // Calculate time ago
+      const diffInSeconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000);
+      let timeAgo;
+      
+      if (diffInSeconds < 60) {
+        timeAgo = `${diffInSeconds} seconds ago`;
+      } else if (diffInSeconds < 3600) {
+        timeAgo = `${Math.floor(diffInSeconds / 60)} minutes ago`;
+      } else if (diffInSeconds < 86400) {
+        timeAgo = `${Math.floor(diffInSeconds / 3600)} hours ago`;
+      } else {
+        timeAgo = `${Math.floor(diffInSeconds / 86400)} days ago`;
+      }
+      
+      return {
+        id: comment._id,
+        author: comment.author.username,
+        profileImage: comment.author.profileImage,
+        content: comment.content,
+        isVerified: comment.author.isVerified,
+        institution: comment.author.institution,
+        timeAgo,
+        likes: 0, // Not implementing comment likes
+        isLiked: false // Not implementing comment likes
+      };
+    });
+    
     // Add user-specific information if user is logged in
     if (user) {
       // Check if user has liked/saved the post
       postObj.isLiked = post.likedBy.includes(user.id);
       postObj.isSaved = post.savedBy?.includes(user.id) || false;
-      
-      // Add mock comments (these would come from a Comments collection in a real app)
-      postObj.commentsList = generateMockComments(postId);
+      postObj.commentsList = formattedComments;
     } else {
       postObj.isLiked = false;
       postObj.isSaved = false;
-      postObj.commentsList = generateMockComments(postId);
+      postObj.commentsList = formattedComments;
     }
     
     return NextResponse.json({ post: postObj });
@@ -60,55 +94,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
-
-// Helper function to generate mock comments
-function generateMockComments(postId: string) {
-  // Generate some mock comments for the post
-  return [
-    {
-      id: `comment-1-${postId}`,
-      author: 'Alex Johnson',
-      profileImage: 'https://i.pravatar.cc/150?img=1',
-      content: 'This is such a helpful post. Thanks for sharing your insights!',
-      isVerified: true,
-      institution: 'Harvard University',
-      timeAgo: '2 hours ago',
-      likes: 5,
-      isLiked: false,
-    },
-    {
-      id: `comment-2-${postId}`,
-      author: 'Sam Rodriguez',
-      profileImage: 'https://i.pravatar.cc/150?img=2',
-      content: 'I disagree with some points here. In my experience, the approach described in paragraph 2 is not always optimal.',
-      isVerified: false,
-      institution: 'Stanford University',
-      timeAgo: '4 hours ago',
-      likes: 3,
-      isLiked: false,
-    },
-    {
-      id: `comment-3-${postId}`,
-      author: 'Morgan Chen',
-      profileImage: 'https://i.pravatar.cc/150?img=3',
-      content: 'Has anyone tried applying these ideas to a different context? I wonder if they would work as well.',
-      isVerified: false,
-      institution: 'MIT',
-      timeAgo: '1 day ago',
-      likes: 7,
-      isLiked: false,
-    },
-    {
-      id: `comment-4-${postId}`,
-      author: 'Taylor Smith',
-      profileImage: 'https://i.pravatar.cc/150?img=4',
-      content: 'Great post! I especially appreciate the practical examples you included.',
-      isVerified: true,
-      institution: 'Yale University',
-      timeAgo: '2 days ago',
-      likes: 12,
-      isLiked: false,
-    },
-  ];
 } 

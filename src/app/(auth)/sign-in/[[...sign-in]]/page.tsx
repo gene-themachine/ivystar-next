@@ -111,9 +111,9 @@ export default function SignInPage() {
       <div className="relative z-10 flex h-full">
         {/* Left Content Area */}
         <div className="hidden md:flex md:w-3/5 relative">
-          {/* Floating icon in bottom-right corner */}
+          {/* Floating icon in bottom-left corner */}
           <motion.div 
-            className="absolute right-12 bottom-8"
+            className="absolute left-12 bottom-8"
             initial="hidden"
             animate={["visible", "floating"]}
             variants={floatingIconVariants}
