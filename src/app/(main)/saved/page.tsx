@@ -147,7 +147,7 @@ export default function Saved() {
           setSavedMentors([]);
         } else {
           setSavedMentors(data.mentors);
-        }
+      }
       } catch (err) {
         console.error('Error fetching saved mentors:', err);
         setError('Failed to load saved mentors. Please try again later.');
@@ -300,18 +300,18 @@ export default function Saved() {
                   } : undefined;
                   
                   return (
-                    <Mentor
+                  <Mentor
                       key={mentor._id}
-                      username={mentor.username}
-                      school={mentor.school}
-                      hourlyRate={mentor.hourlyRate}
-                      tags={mentor.tags}
-                      profileImage={mentor.profileImage}
+                    username={mentor.username}
+                    school={mentor.school}
+                    hourlyRate={mentor.hourlyRate}
+                    tags={mentor.tags}
+                    profileImage={mentor.profileImage}
                       portfolio={portfolio}
-                      bio={mentor.bio}
+                    bio={mentor.bio}
                       isVerified={mentor.isVerified}
                       clerkId={mentor.clerkId}
-                    />
+                  />
                   );
                 })}
               </div>

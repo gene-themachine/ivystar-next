@@ -102,10 +102,11 @@ const getMentorData = async (username: string) => {
 };
 
 type Props = {
-  params: { username: string };
+  params: Promise<{ username: string }>;
 }
 
-export default async function MentorProfilePage({ params }: Props) {
+export default async function MentorProfilePage(props: Props) {
+  const params = await props.params;
   const { username } = params;
   
   const mentorData = await getMentorData(username);

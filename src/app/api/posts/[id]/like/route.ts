@@ -7,11 +7,11 @@ import { currentUser } from '@clerk/nextjs/server';
 // PUT request to toggle like status
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Ensure params is properly handled using the context pattern
-    const { params } = context;
+    const params = await context.params;
     const postId = String(params.id);
 
     const user = await currentUser();
@@ -102,11 +102,11 @@ export async function PUT(
 // GET request to check if a user has liked a post
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Ensure params is properly handled using the context pattern
-    const { params } = context;
+    const params = await context.params;
     const postId = String(params.id);
 
     const user = await currentUser();

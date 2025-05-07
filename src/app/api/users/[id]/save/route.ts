@@ -6,11 +6,11 @@ import { currentUser } from '@clerk/nextjs/server';
 // PUT request to toggle save status for a mentor
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     // Ensure params is properly handled
-    const { params } = context;
     const mentorClerkId = String(params.id);
 
     const user = await currentUser();
@@ -87,11 +87,11 @@ export async function PUT(
 // GET request to check if a user has saved a mentor
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     // Ensure params is properly handled
-    const { params } = context;
     const mentorClerkId = String(params.id);
 
     const user = await currentUser();

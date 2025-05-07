@@ -15,8 +15,6 @@ model User {
   clerkId        String?   @unique
   email          String    @unique
   username       String    @unique
-  firstName      String?
-  lastName       String?
   imageUrl       String?
   role           Role      @default(STUDENT)
   school         String?
