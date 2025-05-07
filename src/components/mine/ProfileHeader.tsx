@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { FaCheckCircle, FaUniversity, FaDollarSign, FaClock } from 'react-icons/fa';
+import { FaCheckCircle, FaDollarSign, FaClock } from 'react-icons/fa';
 
 interface ProfileHeaderProps {
   username: string;
@@ -114,7 +114,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               )}
             </div>
             <div className="flex items-center text-gray-400 mt-2">
-              <FaUniversity className="mr-2" />
               <span>{school}</span>
             </div>
             <div className="mt-4 flex flex-wrap gap-3">

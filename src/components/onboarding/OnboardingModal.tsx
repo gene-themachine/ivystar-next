@@ -172,7 +172,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
         username: username,
         role: userRole,
         interests,
-        hourlyRate: 50 // Set default hourly rate to $50 for all users
+        hourlyRate: 50, // Set default hourly rate to $50 for all users
+        bio: "I'm a member of the Ivystar community passionate about education and collaboration." // Default bio
       };
       
       // Only add grade level if it's set
@@ -214,8 +215,16 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
             college: userRole === 'mentor' ? college : undefined,
             gradeLevel,
             isVerified: userRole === 'mentor' ? false : undefined,
-            hourlyRate: 50 // Set default hourly rate to $50 for all users
+            hourlyRate: Number(50), // Explicitly convert to number type
+            bio: "I'm a member of the Ivystar community passionate about education and collaboration." // Default bio
           };
+          
+          // Log the mongoData specifically focusing on hourlyRate for debugging
+          console.log('---ONBOARDING HOURLY RATE DEBUG---');
+          console.log('MongoDB data being prepared:', mongoData);
+          console.log('hourlyRate value:', mongoData.hourlyRate);
+          console.log('hourlyRate type:', typeof mongoData.hourlyRate);
+          console.log('----------------------------------');
           
           // Save to MongoDB via API
           const response = await fetch('/api/users', {

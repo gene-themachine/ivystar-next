@@ -63,10 +63,11 @@ export default function ProfilePage() {
   const metadata = user?.unsafeMetadata as UserMetadata | undefined;
   const profilePhoto = metadata?.profilePhoto || user?.imageUrl || null;
   const backgroundPhoto = metadata?.backgroundPhoto || null;
-  const college = metadata?.college || "Default University";
+  const userRole = metadata?.role || 'student';
+  // Only set default university for mentors, empty for students
+  const college = metadata?.college || (userRole === 'mentor' ? "Default University" : "");
   const defaultBio = `I'm a member of the Ivystar community passionate about education and collaboration.`;
   const bio = metadata?.bio || defaultBio;
-  const userRole = metadata?.role || 'student';
   console.log("User role from Clerk:", userRole); // Debug user role
   const gradeLevel = metadata?.gradeLevel || 'Freshman';
   const interests = metadata?.interests || []; // Get interests with empty array fallback
@@ -108,10 +109,11 @@ export default function ProfilePage() {
       const metadata = user?.unsafeMetadata as UserMetadata | undefined;
       const profilePhoto = metadata?.profilePhoto || user?.imageUrl || "/images/default-profile.png";
       const backgroundPhoto = metadata?.backgroundPhoto || null;
-      const college = metadata?.college || "Default University";
+      const userRole = metadata?.role || 'student';
+      // Only set default university for mentors, empty for students
+      const college = metadata?.college || (userRole === 'mentor' ? "Default University" : "");
       const defaultBio = `I'm a member of the Ivystar community passionate about education and collaboration.`;
       const bio = metadata?.bio || defaultBio;
-      const userRole = metadata?.role || 'student';
       const gradeLevel = metadata?.gradeLevel || 'Freshman';
       const interests = metadata?.interests || []; // Get interests with empty array fallback
       const isVerified = metadata?.isVerified || false;

@@ -17,6 +17,7 @@ interface UserUpdateData {
   college?: string;
   gradeLevel?: string;
   isVerified?: boolean;
+  hourlyRate?: number;
 }
 
 export async function GET(request: NextRequest) {
@@ -75,8 +76,16 @@ export async function POST(request: NextRequest) {
       projectDescription,
       college,
       gradeLevel,
-      isVerified
+      isVerified,
+      hourlyRate
     } = body;
+    
+    // Add detailed logging for hourlyRate
+    console.log('---HOURLY RATE DEBUGGING---');
+    console.log('Received hourlyRate in request:', hourlyRate);
+    console.log('Hourly rate type:', typeof hourlyRate);
+    console.log('Raw request body:', body);
+    console.log('---------------------------');
     
     // Validate required fields
     if (!clerkId || !username || !email || !role) {
@@ -117,10 +126,12 @@ export async function POST(request: NextRequest) {
         projectDescription,
         college,
         gradeLevel,
-        isVerified
+        isVerified,
+        hourlyRate: (hourlyRate !== undefined && hourlyRate !== null && String(hourlyRate).trim() !== '') ? Number(hourlyRate) : 50
       };
       
       console.log('Update object being sent to MongoDB:', updateObject);
+      console.log('HourlyRate in update object:', updateObject.hourlyRate);
       
       // Update existing user with the explicit update object
       const updatedUser = await User.findOneAndUpdate(
@@ -130,6 +141,7 @@ export async function POST(request: NextRequest) {
       );
       
       console.log('User updated in MongoDB successfully');
+      console.log('HOURLY RATE VERIFICATION - Updated user hourlyRate:', updatedUser.hourlyRate);
       
       return NextResponse.json({ user: updatedUser }, { status: 200 });
     } else {
@@ -149,7 +161,8 @@ export async function POST(request: NextRequest) {
         projectDescription,
         college,
         gradeLevel,
-        isVerified
+        isVerified,
+        hourlyRate: (hourlyRate !== undefined && hourlyRate !== null && String(hourlyRate).trim() !== '') ? Number(hourlyRate) : 50
       };
       
       console.log('New user data being sent to MongoDB:', newUserData);
@@ -161,6 +174,7 @@ export async function POST(request: NextRequest) {
       });
       
       console.log('New user created in MongoDB successfully');
+      console.log('HOURLY RATE VERIFICATION - New user hourlyRate:', newUser.hourlyRate);
       
       return NextResponse.json({ user: newUser }, { status: 201 });
     }
