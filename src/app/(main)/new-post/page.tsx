@@ -15,7 +15,6 @@ export default function NewPostPage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [tags, setTags] = useState('')
-  const [community, setCommunity] = useState('')
   const [images, setImages] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -83,13 +82,12 @@ export default function NewPostPage() {
         .filter(tag => tag) // Remove empty tags
         .map(tag => tag.startsWith('#') ? tag.substring(1) : tag) // Remove # if present
       
-      // Create post data
+      // Create post data (no community field)
       const postData = {
         title,
         content,
         images: uploadedImageUrls,
         tags: parsedTags,
-        community: community || undefined
       }
       
       // Save post to MongoDB via API
@@ -187,21 +185,6 @@ export default function NewPostPage() {
               className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-[#0387D0] transition"
             />
             <p className="mt-1 text-xs text-gray-400">Add relevant tags to help others discover your post</p>
-          </div>
-          
-          {/* Community input */}
-          <div>
-            <label htmlFor="community" className="block text-sm font-medium text-gray-300 mb-2">
-              Community (Optional)
-            </label>
-            <input
-              type="text"
-              id="community"
-              value={community}
-              onChange={(e) => setCommunity(e.target.value)}
-              placeholder="e.g. Study Tips, Research Opportunities"
-              className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-[#0387D0] transition"
-            />
           </div>
           
           {/* Image upload */}

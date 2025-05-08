@@ -18,7 +18,6 @@ const Post: React.FC<PostProps> = ({
   profileImage,
   institution,
   timeAgo,
-  community,
   title,
   content,
   tags,
@@ -402,7 +401,7 @@ const Post: React.FC<PostProps> = ({
                 <span>{fieldOfStudy}</span>
               </div>
             ) : null}
-            <span className="text-gray-500 text-xs">{timeAgo} • {community}</span>
+            <span className="text-gray-500 text-xs">{timeAgo}</span>
           </div>
         </div>
       </div>

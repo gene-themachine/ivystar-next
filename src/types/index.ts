@@ -5,7 +5,7 @@ export interface PostType {
   profileImage: string | null;
   institution: string;
   timeAgo: string;
-  community: string;
+  community?: string;
   title: string;
   content: string;
   tags: string[];
