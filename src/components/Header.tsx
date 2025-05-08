@@ -12,7 +12,17 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-export default function Header({ children }: { children?: React.ReactNode }) {
+interface HeaderProps {
+  children?: React.ReactNode;
+  onMobileMenuToggle?: () => void;
+  isMobileMenuOpen?: boolean;
+}
+
+export default function Header({ 
+  children,
+  onMobileMenuToggle,
+  isMobileMenuOpen
+}: HeaderProps) {
   const router = useRouter();
   const placeholders = [
     "I'm curious about...",
@@ -91,9 +101,29 @@ export default function Header({ children }: { children?: React.ReactNode }) {
   };
 
   return (
-    <header className={`w-full flex justify-between items-center px-10 py-4 bg-gray-900 shadow-md border-b border-gray-800`}>
+    <header className={`w-full flex justify-between items-center px-4 md:px-10 py-4 bg-gray-900 shadow-md border-b border-gray-800`}>
+      {/* Mobile menu toggle button */}
+      {onMobileMenuToggle && (
+        <button 
+          className="md:hidden mr-4 p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          onClick={onMobileMenuToggle}
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {isMobileMenuOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
+      )}
+      
       <div className="flex items-center flex-1 max-w-[1500px] mr-8">
-        <nav className="flex items-center gap-8">
+        {/* Hide the navigation on mobile to save space */}
+        <nav className="hidden md:flex items-center gap-8">
           <a href="/how-it-works" className="text-gray-300 font-medium hover:text-white relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-blue-400 after:bottom-[-6px] after:left-0 after:transition-width after:duration-200 hover:after:w-full">
             How it works
           </a>
@@ -102,7 +132,7 @@ export default function Header({ children }: { children?: React.ReactNode }) {
           </a>
         </nav>
         
-        <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-[500px] mx-8">
+        <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-[500px] mx-auto md:mx-8">
           <input
             type="text"
             placeholder={currentPlaceholder}
@@ -123,13 +153,13 @@ export default function Header({ children }: { children?: React.ReactNode }) {
       </div>
       
       <div className="flex items-center gap-8">
-        <div className="text-right">
+        <div className="text-right hidden sm:block">
           <div className="text-white font-medium text-lg">Aspirational</div>
           <div className="text-gray-400 text-xs font-semibold tracking-wide">HIGHER LEARNING</div>
         </div>
         
         {(isLoaded && !user) && (
-          <a href="/sign-up" className="bg-blue-500 text-white font-medium py-3 px-8 rounded-full transition-all hover:bg-blue-600 hover:transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-md">
+          <a href="/sign-up" className="bg-blue-500 text-white font-medium py-2 px-4 sm:px-8 rounded-full transition-all hover:bg-blue-600 hover:transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-md whitespace-nowrap">
             Get Started
           </a>
         )}

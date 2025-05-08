@@ -20,13 +20,17 @@ interface UserMetadata {
   profilePhoto?: string;
 }
 
+interface SidebarProps {
+  onCloseMobileMenu?: () => void;
+}
+
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
 })
 
-export default function Sidebar() {
+export default function Sidebar({ onCloseMobileMenu }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [isHovered, setIsHovered] = useState<string | null>(null)
@@ -63,8 +67,19 @@ export default function Sidebar() {
   console.log("Sidebar user role from Clerk:", userRole) // Debug user role
 
   const handleLogout = () => {
-    setIsMenuOpen(false)
-  }
+    setIsMenuOpen(false);
+    if (onCloseMobileMenu) {
+      onCloseMobileMenu();
+    }
+  };
+
+  // Handle navigation with mobile menu closing
+  const handleNavigation = (path: string) => {
+    router.push(path);
+    if (onCloseMobileMenu) {
+      onCloseMobileMenu();
+    }
+  };
 
   return (
     <motion.div 
@@ -73,6 +88,21 @@ export default function Sidebar() {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
+      {/* Close button for mobile view */}
+      {onCloseMobileMenu && (
+        <div className="flex justify-end pt-4 md:hidden">
+          <button 
+            className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            onClick={onCloseMobileMenu}
+            aria-label="Close menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="mt-[-30px] mb-2">
         <Link href="/">
           <div className="flex justify-center items-center">
@@ -96,7 +126,9 @@ export default function Sidebar() {
         <motion.button 
           className="w-full flex items-center justify-center border border-gray-700 py-2 px-3 rounded-lg text-gray-200 font-medium hover:bg-gray-800 transition-all duration-150 ease-out shadow-sm hover:shadow group"
           whileTap={{ scale: 0.97 }}
-          onClick={() => router.push('/new-post')}
+          onClick={() => {
+            handleNavigation('/new-post');
+          }}
         >
           <svg 
             className="w-4 h-4 mr-2" 
@@ -164,13 +196,13 @@ export default function Sidebar() {
             onHoverEnd={() => setIsHovered(null)}
             transition={{ duration: 0.2, type: "tween" }}
           >
-            <Link 
-              href={item.path} 
-              className={`flex items-center py-2 px-3 rounded-lg transition-all duration-200 ease-in-out text-gray-400 hover:bg-gray-800 hover:text-gray-100 group ${
+            <div 
+              className={`flex items-center py-2 px-3 rounded-lg transition-all duration-200 ease-in-out text-gray-400 hover:bg-gray-800 hover:text-gray-100 group cursor-pointer ${
                 pathname === item.path 
                   ? 'bg-gray-800 text-white border-l-4 border-blue-500'
                   : 'border-l-4 border-transparent'
               }`}
+              onClick={() => handleNavigation(item.path)}
             >
               <div 
                 className={`w-4 h-4 mr-2 ${pathname === item.path ? 'stroke-[2.4px]' : 'stroke-2'}`}
@@ -183,7 +215,7 @@ export default function Sidebar() {
               {pathname === item.path && (
                 <div className="ml-auto h-2 w-2 rounded-full bg-blue-400" />
               )}
-            </Link>
+            </div>
           </motion.div>
         ))}
       </nav>
@@ -195,7 +227,7 @@ export default function Sidebar() {
           <div className="relative" ref={menuRef}>
             <div 
               className="flex items-center p-3 rounded-lg hover:bg-gray-800 transition-all duration-150 ease-out cursor-pointer group"
-              onClick={() => router.push('/profile')}
+              onClick={() => handleNavigation('/profile')}
             >
               <div 
                 className="w-10 h-10 rounded-full bg-gray-800 mr-3 flex items-center justify-center text-gray-300 overflow-hidden border border-gray-700 shadow-sm"

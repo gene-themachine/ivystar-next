@@ -116,6 +116,8 @@ export default function Mentor({
           borderColor: 'rgba(59, 130, 246, 0.5)' // Blue border on hover
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div className="p-5 flex-grow flex flex-col">
           {/* Header with profile pic and info */}
@@ -143,12 +145,12 @@ export default function Mentor({
             </div>
             <div className="space-y-0.5 flex-grow">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg text-white tracking-tight group-hover:text-blue-400 transition-colors flex items-center">
-                  {username}
-                  {isVerified && (
-                    <FaCheckCircle className="text-blue-500 ml-2 text-base" />
-                  )}
-                </h3>
+              <h3 className="font-bold text-lg text-white tracking-tight group-hover:text-blue-400 transition-colors flex items-center">
+                {username}
+                {isVerified && (
+                  <FaCheckCircle className="text-blue-500 ml-2 text-base" />
+                )}
+              </h3>
                 {/* Save button */}
                 <button 
                   onClick={handleSave}
@@ -233,8 +235,8 @@ export default function Mentor({
             )}
           </div>
           
-          {/* View Profile Button */}
-          <div className="mt-4">
+          {/* View Profile Button - only visible on hover */}
+          <div className={`mt-4 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             <Link href={`/profile/${username}`} className="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm font-medium transition-colors">
               View Profile
             </Link>

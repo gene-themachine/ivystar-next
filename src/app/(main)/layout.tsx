@@ -13,7 +13,7 @@ import { useUserStore } from '@/store/user-store'
 import { useOnboardingStore } from '@/store/onboarding-store'
 import { useEffect, useState } from 'react'
 import OnboardingModal from '@/components/onboarding/OnboardingModal'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function MainLayout({
   children,
@@ -26,6 +26,7 @@ export default function MainLayout({
   const checkOnboardingStatus = useOnboardingStore((state) => state.checkOnboardingStatus);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Sync Clerk user data with our store
   useEffect(() => {
@@ -72,18 +73,67 @@ export default function MainLayout({
       setIsProcessing(false);
     }, 500);
   };
+
+  // Close mobile menu when clicking outside on larger screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobileMenuOpen]);
+
+  // Prevent scrolling on body when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
   
   return (
     <div className="flex h-full bg-gray-900 text-white relative">
-      <aside className="w-[240px] bg-gray-900 border-r border-gray-800 shadow-md sticky top-0 h-full z-20 flex flex-col">
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Desktop Sidebar - always visible on desktop */}
+      <div className="hidden md:block w-[240px] bg-gray-900 border-r border-gray-800 shadow-md h-full sticky top-0">
         <Sidebar />
-      </aside>
+      </div>
+
+      {/* Mobile Sidebar - only visible when menu is open */}
+      <motion.aside 
+        className="w-[240px] bg-gray-900 border-r border-gray-800 shadow-md h-full z-40 flex flex-col
+                   fixed md:hidden top-0 left-0 transform-gpu transition-all duration-300 ease-in-out"
+        initial={{ x: -240 }}
+        animate={{ 
+          x: isMobileMenuOpen ? 0 : -240,
+          boxShadow: isMobileMenuOpen ? "0 0 15px rgba(0,0,0,0.5)" : "none"
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        <Sidebar onCloseMobileMenu={() => setIsMobileMenuOpen(false)} />
+      </motion.aside>
 
       <div className="flex flex-col flex-1 overflow-hidden bg-gray-900">
-        <Header>
-          <SignedOut>
-          </SignedOut>
+        <Header 
+          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          isMobileMenuOpen={isMobileMenuOpen}
+        >
           <SignedIn>
+            {/* No UserButton here */}
           </SignedIn>
         </Header>
 
@@ -101,7 +151,6 @@ export default function MainLayout({
           />
         )}
       </AnimatePresence>
-      
     </div>
   )
 } 

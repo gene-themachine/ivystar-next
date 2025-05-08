@@ -2,6 +2,7 @@
 
 import ProfileHeader from './ProfileHeader';
 import Gallery from './Gallery';
+import { useRouter } from 'next/navigation';
 
 // Define types for our data
 interface MentorProfileProps {
@@ -45,6 +46,8 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
   gradeLevel,
   interests = []
 }) => {
+  const router = useRouter();
+  
   // Calculate time on platform only if not already provided
   const calculatedTimeOnPlatform = timeOnPlatform || (() => {
     const joinDate = new Date(joinedDate);
@@ -62,8 +65,12 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
   })();
 
   const handleMessageClick = () => {
-    // This would typically open a message modal or navigate to message page
-    alert(`You clicked to message ${username}!`);
+    // Navigate to message page with clerkId or username as fallback
+    if (clerkId) {
+      router.push(`/message/${clerkId}`);
+    } else {
+      router.push(`/message/${username}`);
+    }
   };
 
   return (
