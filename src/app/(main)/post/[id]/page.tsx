@@ -332,7 +332,13 @@ export default function PostDetailPage() {
             />
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold text-white">{post.author.username}</span>
+                <span 
+                  className="font-semibold text-white hover:text-blue-400 cursor-pointer transition-colors"
+                  onClick={() => window.location.href = `/profile/${post.author.username}`}
+                  title="View profile"
+                >
+                  {post.author.username}
+                </span>
                 {/* Show verification badge only for mentors */}
                 {isMentor && post.author.isVerified && (
                   <FaCheck size={18} className="text-orange-500" title="Verified Mentor" />
@@ -500,7 +506,13 @@ export default function PostDetailPage() {
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-white">{comment.author}</span>
+                        <span 
+                          className="font-semibold text-white hover:text-blue-400 cursor-pointer transition-colors"
+                          onClick={() => window.location.href = `/profile/${comment.author}`}
+                          title="View profile"
+                        >
+                          {comment.author}
+                        </span>
                         {comment.isVerified && (
                           <FaCheck size={16} className="text-orange-500" title="Verified Mentor" />
                         )}

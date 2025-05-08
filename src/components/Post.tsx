@@ -379,7 +379,16 @@ const Post: React.FC<PostProps> = ({
         <ProfileImage src={profileImage} alt={author} size={56} className="border-2 border-gray-800" />
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold text-white">{author}</span>
+            <span 
+              className="font-semibold text-white hover:text-blue-400 cursor-pointer transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = `/profile/${author}`;
+              }}
+              title="View profile"
+            >
+              {author}
+            </span>
             {/* Show verification badge only for mentors */}
             {isMentor && isVerified && <FaCheck size={18} className="text-orange-500" title="Verified Mentor" />}
             

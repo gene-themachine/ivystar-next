@@ -57,6 +57,7 @@ const ProfileBioSection: React.FC<ProfileBioSectionProps> = ({
                     onChange={(e) => onFormChange('school', e.target.value)}
                   />
                 </div>
+                {/* Hourly rate editing temporarily removed
                 <div className="mb-4">
                   <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-300 mb-1">
                     Hourly Rate ($)
@@ -71,6 +72,7 @@ const ProfileBioSection: React.FC<ProfileBioSectionProps> = ({
                     onChange={(e) => onFormChange('hourlyRate', parseInt(e.target.value))}
                   />
                 </div>
+                */}
               </>
             )}
             <div>
