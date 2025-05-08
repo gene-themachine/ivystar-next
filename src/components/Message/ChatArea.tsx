@@ -9,7 +9,8 @@ interface Message {
   id: string;
   content: string;
   time: string;
-  isUser: boolean;
+  isUser?: boolean;
+  senderId?: string;
 }
 
 interface ChatAreaProps {
@@ -76,15 +77,21 @@ export default function ChatArea({ conversationId, messages, userId, userName = 
           )}
           
           {/* Messages */}
-          {messages.map((message, index) => (
-            <MessageBubble
-              key={message.id}
-              content={message.content}
-              time={message.time}
-              isUser={message.isUser}
-              delay={index * 0.1}
-            />
-          ))}
+          {messages.map((message, index) => {
+            // Determine if the current user is the sender of this message
+            const isSelf = message.senderId
+              ? message.senderId === userId
+              : message.isUser || false;
+            return (
+              <MessageBubble
+                key={message.id}
+                content={message.content}
+                time={message.time}
+                isUser={isSelf}
+                delay={index * 0.1}
+              />
+            );
+          })}
           
           {/* Empty div for auto-scrolling */}
           <div ref={messagesEndRef} />
