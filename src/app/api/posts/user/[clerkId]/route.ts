@@ -7,10 +7,10 @@ import { currentUser } from '@clerk/nextjs/server';
 // GET /api/posts/user/[clerkId]
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { clerkId: string } }
+  { params }: { params: Promise<{ clerkId: string }> }
 ) {
   try {
-    const { clerkId } = params;
+    const { clerkId } = await params;
 
     if (!clerkId) {
       return NextResponse.json(
