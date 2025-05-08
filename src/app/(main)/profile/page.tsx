@@ -11,6 +11,9 @@ import {
   ProfilePortfolio,
   ProfileActions
 } from "@/components/mine";
+import { useRouter } from "next/navigation";
+import Post from "@/components/Post";
+import { PostType } from "@/types";
 
 // Define the type for unsafeMetadata
 interface UserMetadata {
@@ -51,6 +54,14 @@ export default function ProfilePage() {
   const backgroundInputRef = useRef<HTMLInputElement>(null) as React.RefObject<HTMLInputElement>;
   const profileInputRef = useRef<HTMLInputElement>(null) as React.RefObject<HTMLInputElement>;
   const { startUpload } = useUploadThing("imageUploader");
+  
+  // Router for navigating to post detail pages
+  const router = useRouter();
+  
+  // State for user's own posts
+  const [myPosts, setMyPosts] = useState<PostType[]>([]);
+  const [isPostsLoading, setIsPostsLoading] = useState(true);
+  const [postsError, setPostsError] = useState<string | null>(null);
   
   // Get display username from different sources with fallbacks
   const displayUsername = storeUsername || 
@@ -99,6 +110,30 @@ export default function ProfilePage() {
   // Background file to upload
   const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
   const [profileFile, setProfileFile] = useState<File | null>(null);
+  
+  // Helper to format dates into "time ago"
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) return interval === 1 ? "1 year ago" : `${interval} years ago`;
+
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) return interval === 1 ? "1 month ago" : `${interval} months ago`;
+
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) return interval === 1 ? "1 day ago" : `${interval} days ago`;
+
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval === 1 ? "1 hour ago" : `${interval} hours ago`;
+
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval === 1 ? "1 minute ago" : `${interval} minutes ago`;
+
+    return seconds < 10 ? "just now" : `${seconds} seconds ago`;
+  };
   
   // Update profile data when user data changes
   useEffect(() => {
@@ -177,6 +212,75 @@ export default function ProfilePage() {
       };
       
       fetchProjects();
+      
+      // Fetch user's own posts
+      const fetchMyPosts = async () => {
+        try {
+          if (!user) return;
+          setIsPostsLoading(true);
+          const response = await fetch(`/api/posts/user/${user.id}`, {
+            credentials: "include",
+            cache: "no-store",
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch posts");
+          }
+
+          const data = await response.json();
+
+          const formattedPosts: PostType[] = data.posts.map((post: any) => {
+            let profileImage = null;
+            if (post.author?.profileImage) {
+              const imgUrl = post.author.profileImage.trim();
+              if (
+                imgUrl &&
+                (imgUrl.startsWith("http://") || imgUrl.startsWith("https://") || imgUrl.startsWith("/"))
+              ) {
+                profileImage = imgUrl;
+              }
+            }
+
+            return {
+              id: post._id,
+              author: post.author.username || "Anonymous",
+              isVerified: post.author.isVerified || false,
+              profileImage,
+              institution:
+                post.author.institution &&
+                post.author.institution !== "Unknown Institution" &&
+                post.author.institution !== "Default University"
+                  ? post.author.institution
+                  : undefined,
+              timeAgo: formatTimeAgo(post.createdAt),
+              community: post.community || "General",
+              title: post.title,
+              content: post.content,
+              tags: post.tags || [],
+              likes: post.likes || 0,
+              comments: post.comments || 0,
+              isLiked: post.isLiked === true,
+              isSaved: post.isSaved === true,
+              fieldOfStudy:
+                post.author.field && post.author.field !== "N/A"
+                  ? post.author.field
+                  : undefined,
+              images: post.images || [],
+              role: post.author.role || "student",
+            } as PostType;
+          });
+
+          setMyPosts(formattedPosts);
+          setPostsError(null);
+        } catch (err) {
+          console.error("Error fetching user posts:", err);
+          setPostsError("Failed to load posts. Please try again later.");
+        } finally {
+          setIsPostsLoading(false);
+        }
+      };
+
+      fetchMyPosts();
       
       setProfileData(prev => ({
         ...prev,
@@ -643,6 +747,16 @@ export default function ProfilePage() {
           workSamples={workSamples}
           onUpdateWorkSamples={handleUpdateWorkSamples}
         />
+
+        {/* Button to view My Posts page - now at bottom */}
+        <div className="text-center mt-10">
+          <button
+            onClick={() => router.push('/my-posts')}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md transition-colors"
+          >
+            View My Posts
+          </button>
+        </div>
       </div>
     </div>
   );

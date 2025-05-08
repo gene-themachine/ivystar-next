@@ -11,19 +11,19 @@ export default function About() {
         <div className="space-y-12">
           {/* Hero Section */}
           <div className="text-center">
-            <div className="mx-auto w-32 h-32 mb-6 relative">
+            <div className="mx-auto w-56 h-56 mb-6 relative">
               <Image 
                 src="/ivystar-logo.png" 
                 alt="Ivystar" 
-                width={128}
-                height={128}
+                width={224}
+                height={224}
                 className="object-contain"
                 priority
               />
             </div>
             
-            <h2 className="text-3xl font-bold mb-3 tracking-tight text-white">
-              Explore. Connect. Grow.
+            <h2 className="text-3xl font-bold mb-3 tracking-tight text-orange-500">
+            Our vision is for everyone to have a mentor
             </h2>
           </div>
 

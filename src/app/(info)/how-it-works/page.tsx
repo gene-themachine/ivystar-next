@@ -11,7 +11,7 @@ export default function HowItWorks() {
       <div className="container mx-auto px-6 py-12 max-w-4xl space-y-12">
         {/* Hero */}
         <div className="text-center space-y-4 mb-10">
-          <div className="w-40 h-40 mx-auto relative">
+          <div className="w-64 h-64 mx-auto relative">
             <Image
               src="/ivystar-logo.png"
               alt="Ivystar Logo"
