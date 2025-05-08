@@ -73,6 +73,7 @@ export default function Home() {
             comments: post.comments || 0,
             // Use the isLiked property from the API response
             isLiked: post.isLiked === true,
+            role: post.author.role || 'student',
             // Use the isSaved property from the API response
             isSaved: post.isSaved === true,
             fieldOfStudy: (post.author.field && post.author.field !== 'N/A') 

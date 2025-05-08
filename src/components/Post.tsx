@@ -28,7 +28,8 @@ const Post: React.FC<PostProps> = ({
   isSaved,
   onPostClick,
   fieldOfStudy,
-  images
+  images,
+  role
 }) => {
   // Component state
   const [liked, setLiked] = useState<boolean | undefined>(undefined);
@@ -383,16 +384,10 @@ const Post: React.FC<PostProps> = ({
             {/* Show verification badge only for mentors */}
             {isMentor && isVerified && <FaCheck size={18} className="text-orange-500" title="Verified Mentor" />}
             
-            {/* Display role without icons */}
-            {isMentor ? (
-              <span className="flex items-center bg-orange-900/40 text-orange-400 px-2 py-0.5 rounded-full text-xs">
-                Mentor
-              </span>
-            ) : (
-              <span className="flex items-center bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded-full text-xs">
-                Student
-              </span>
-            )}
+            {/* Role badge */}
+            <span className={`flex items-center px-2 py-0.5 rounded-full text-xs ${role === 'mentor' ? 'bg-orange-900/40 text-orange-400' : 'bg-blue-900/40 text-blue-400'}`}>
+              {role === 'mentor' ? 'Mentor' : 'Student'}
+            </span>
           </div>
           <div className="text-sm text-gray-300">
             {(institution && institution !== 'Unknown Institution' && institution !== 'Default University') ? (

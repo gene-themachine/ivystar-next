@@ -16,6 +16,7 @@ export interface PostType {
   fieldOfStudy?: string;
   images?: string[];
   hasMentorResponse?: boolean;
+  role?: 'mentor' | 'student';
 }
 
 export interface UserMetadata {
