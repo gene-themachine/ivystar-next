@@ -15,6 +15,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'ivystar.',
   description: 'Your aspirational higher learning platform',
+  icons: {
+    icon: '/web-logo.png',
+    shortcut: '/web-logo.png',
+    apple: '/web-logo.png',
+  },
 }
 
 // Add a JS function to handle chunk load errors
@@ -69,6 +74,13 @@ export default function RootLayout({
         <head>
           {/* Add the chunk error handling script */}
           <ChunkErrorHandling />
+          {/* Favicon */}
+          <link
+            rel="icon"
+            href="/web-logo.svg"
+            type="image/svg+xml"
+            sizes="any"
+          />
         </head>
         <body className={`${inter.variable} font-sans h-full antialiased`}>
           <Toaster
