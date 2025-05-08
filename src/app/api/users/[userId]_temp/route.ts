@@ -14,10 +14,10 @@ interface UserDocument {
 
 export async function GET(
   request: NextRequest,
-  context: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = context.params;
+    const { userId } = await params;
     const user = await currentUser();
     
     // Optional: Check if the user is authenticated

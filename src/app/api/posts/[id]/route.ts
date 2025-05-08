@@ -8,11 +8,11 @@ import { currentUser } from '@clerk/nextjs/server';
 // GET request to fetch a post by ID
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get ID directly from context.params
-    const { id: postId } = context.params;
+    const { id: postId } = await params;
     
     if (!postId) {
       return NextResponse.json(

@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Post from '@/models/Post';
-import User from '@/models/User';
 import Comment from '@/models/Comment';
 import { currentUser } from '@clerk/nextjs/server';
 
-// GET request to fetch all comments for a post
+// GET comments for a specific post
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: postId } = context.params;
+    const { id: postId } = await params;
     
     if (!postId) {
       return NextResponse.json(
@@ -22,10 +21,19 @@ export async function GET(
     
     await connectDB();
     
-    // Find comments for this post
+    // Verify the post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return NextResponse.json(
+        { error: 'Post not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Fetch comments for this post
     const comments = await Comment.find({ postId }).sort({ createdAt: -1 });
     
-    // Transform to client-friendly format
+    // Transform comments to client-friendly format
     const formattedComments = comments.map(comment => {
       const createdAt = new Date(comment.createdAt);
       const now = new Date();
@@ -51,8 +59,9 @@ export async function GET(
         content: comment.content,
         isVerified: comment.author.isVerified,
         institution: comment.author.institution,
+        role: comment.author.role,
         timeAgo,
-        likes: 0 // We're not implementing comment likes as requested
+        createdAt: comment.createdAt
       };
     });
     
@@ -66,14 +75,12 @@ export async function GET(
   }
 }
 
-// POST request to add a comment to a post
+// POST a new comment to a post
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: postId } = context.params;
-    
     const user = await currentUser();
     if (!user) {
       return NextResponse.json(
@@ -82,6 +89,8 @@ export async function POST(
       );
     }
     
+    const { id: postId } = await params;
+    
     if (!postId) {
       return NextResponse.json(
         { error: 'Post ID is required' },
@@ -89,18 +98,20 @@ export async function POST(
       );
     }
     
-    const { content } = await request.json();
+    const body = await request.json();
+    const { content } = body;
     
-    if (!content || content.trim() === '') {
+    // Validate required fields
+    if (!content) {
       return NextResponse.json(
-        { error: 'Comment content cannot be empty' },
+        { error: 'Comment content is required' },
         { status: 400 }
       );
     }
     
     await connectDB();
     
-    // Find the post to make sure it exists
+    // Verify the post exists
     const post = await Post.findById(postId);
     if (!post) {
       return NextResponse.json(
@@ -109,30 +120,34 @@ export async function POST(
       );
     }
     
-    // Get user profile information
+    // Get the profile image with correct priority
     const profileImage = user.unsafeMetadata?.profilePhoto as string || user.imageUrl || '/images/default-profile.png';
+    
+    // Get user role from metadata
     const userRole = (user.unsafeMetadata?.role as 'mentor' | 'student') || 'student';
     
-    // Create the new comment
+    // Create the comment
     const newComment = await Comment.create({
       content,
       author: {
         clerkId: user.id,
         username: user.unsafeMetadata?.username as string || user.username || user.firstName || 'Anonymous',
-        profileImage,
+        profileImage: profileImage,
         institution: user.unsafeMetadata?.college as string || user.unsafeMetadata?.institution as string || 'Unknown Institution',
         isVerified: user.unsafeMetadata?.isVerified as boolean || false,
         role: userRole,
       },
-      postId,
+      postId
     });
     
-    // Increment comment count on the post
-    post.comments += 1;
-    await post.save();
+    // Update the comments count on the post
+    await Post.findByIdAndUpdate(postId, { $inc: { comments: 1 } });
     
-    // Format the comment for response
+    // Format the new comment with timeAgo for consistency with GET
+    const now = new Date();
     const createdAt = new Date(newComment.createdAt);
+    const diffInSeconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000);
+    let timeAgo = "Just now";
     
     const formattedComment = {
       id: newComment._id,
@@ -141,19 +156,17 @@ export async function POST(
       content: newComment.content,
       isVerified: newComment.author.isVerified,
       institution: newComment.author.institution,
-      timeAgo: 'Just now',
-      likes: 0
+      role: newComment.author.role,
+      timeAgo,
+      createdAt: newComment.createdAt
     };
     
-    return NextResponse.json({ 
-      success: true, 
-      comment: formattedComment
-    });
+    return NextResponse.json({ comment: formattedComment }, { status: 201 });
   } catch (error) {
-    console.error('Error adding comment:', error);
+    console.error('Error creating comment:', error);
     return NextResponse.json(
-      { error: 'Failed to add comment' },
+      { error: 'Failed to create comment' },
       { status: 500 }
     );
   }
-} 
+}
