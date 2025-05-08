@@ -9,18 +9,21 @@ interface Conversation {
   time: string;
   unread: number;
   isActive: boolean;
+  participants?: string[];
 }
 
 interface ConversationListProps {
   conversations: Conversation[];
-  activeConversation: string;
+  activeConversation: string | null;
   setActiveConversation: (id: string) => void;
+  isLoading?: boolean;
 }
 
 export default function ConversationList({
   conversations,
   activeConversation,
-  setActiveConversation
+  setActiveConversation,
+  isLoading = false
 }: ConversationListProps) {
   return (
     <div className="w-80 border-r border-gray-700 flex flex-col bg-gray-800 overflow-hidden">
@@ -41,47 +44,68 @@ export default function ConversationList({
       </div>
       
       <div className="overflow-y-auto flex-1 scrollbar-none">
-        {conversations.map((conversation) => (
-          <motion.div
-            key={conversation.id}
-            className={`py-3 px-4 cursor-pointer transition-colors border-b border-gray-700 ${
-              activeConversation === conversation.id 
-                ? 'bg-gray-700 border-l-2 border-blue-500' 
-                : 'hover:bg-gray-700 border-l-2 border-transparent'
-            }`}
-            onClick={() => setActiveConversation(conversation.id)}
-            whileHover={{ 
-              backgroundColor: activeConversation === conversation.id ? '' : 'rgba(55, 65, 81, 1)'
-            }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className={`font-medium text-sm truncate ${
-                    activeConversation === conversation.id ? 'text-white' : 'text-gray-200'
-                  }`}>{conversation.name}</p>
+        {isLoading ? (
+          // Loading placeholders
+          Array(5).fill(0).map((_, i) => (
+            <div key={`loading-${i}`} className="py-3 px-4 border-b border-gray-700">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="w-24 h-4 bg-gray-700 rounded animate-pulse"></div>
+                  <div className="w-32 h-3 mt-2 bg-gray-700 rounded animate-pulse"></div>
                 </div>
-                <p className={`text-sm truncate mt-1 ${
-                  activeConversation === conversation.id ? 'text-gray-300' : 'text-gray-400'
-                }`}>{conversation.lastMessage}</p>
-              </div>
-              <div className="flex flex-col items-end gap-1.5">
-                <span className="text-xs text-gray-400">{conversation.time}</span>
-                {conversation.unread > 0 && (
-                  <motion.span 
-                    className="w-5 h-5 bg-blue-500 rounded-full text-white text-xs flex items-center justify-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  >
-                    {conversation.unread}
-                  </motion.span>
-                )}
+                <div className="flex flex-col items-end gap-1.5">
+                  <div className="w-12 h-3 bg-gray-700 rounded animate-pulse"></div>
+                </div>
               </div>
             </div>
-          </motion.div>
-        ))}
+          ))
+        ) : conversations.length > 0 ? (
+          conversations.map((conversation) => (
+            <motion.div
+              key={conversation.id}
+              className={`py-3 px-4 cursor-pointer transition-colors border-b border-gray-700 ${
+                activeConversation === conversation.id 
+                  ? 'bg-gray-700 border-l-2 border-blue-500' 
+                  : 'hover:bg-gray-700 border-l-2 border-transparent'
+              }`}
+              onClick={() => setActiveConversation(conversation.id)}
+              whileHover={{ 
+                backgroundColor: activeConversation === conversation.id ? '' : 'rgba(55, 65, 81, 1)'
+              }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className={`font-medium text-sm truncate ${
+                      activeConversation === conversation.id ? 'text-white' : 'text-gray-200'
+                    }`}>{conversation.name}</p>
+                  </div>
+                  <p className={`text-sm truncate mt-1 ${
+                    activeConversation === conversation.id ? 'text-gray-300' : 'text-gray-400'
+                  }`}>{conversation.lastMessage}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1.5">
+                  <span className="text-xs text-gray-400">{conversation.time}</span>
+                  {conversation.unread > 0 && (
+                    <motion.span 
+                      className="w-5 h-5 bg-blue-500 rounded-full text-white text-xs flex items-center justify-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    >
+                      {conversation.unread}
+                    </motion.span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <div className="flex items-center justify-center h-24 text-gray-400 text-sm">
+            No conversations found
+          </div>
+        )}
       </div>
     </div>
   );

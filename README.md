@@ -1,3 +1,58 @@
+# IvyStar - Mentor-Student Network
+
+## Firebase Chat Setup
+
+The messaging system in IvyStar uses Firebase for real-time chat functionality. Follow these steps to set up Firebase:
+
+1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
+
+2. Enable Firestore database in your Firebase project
+
+3. Add environment variables to your `.env.local` file:
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+```
+
+4. Set up Firestore security rules:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /conversations/{conversationId} {
+      allow read, write: if request.auth != null && 
+                         resource.data.participants.hasAny([request.auth.uid]);
+      
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null && 
+                           get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants.hasAny([request.auth.uid]);
+      }
+    }
+  }
+}
+```
+
+## Features
+
+- Real-time messaging with Firebase
+- Message notifications and unread counts
+- Start conversations from user profiles
+- View and manage multiple conversations
+- Real-time conversation updates
+
+## Implementation Details
+
+- Messages are stored in Firebase Firestore, not MongoDB
+- Authentication is handled by Clerk
+- Messaging uses Firebase client SDK with Clerk authentication
+- The entire messaging system is real-time and updates instantly
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

@@ -14,9 +14,10 @@ interface UserDocument {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: { userId: string } }
 ) {
   try {
+    const { userId } = context.params;
     const user = await currentUser();
     
     // Optional: Check if the user is authenticated
@@ -28,12 +29,12 @@ export async function GET(
     await connectDB();
     
     // Try to find the user by clerkId (for Clerk users)
-    let userData = await User.findOne({ clerkId: params.userId }).lean() as UserDocument | null;
+    let userData = await User.findOne({ clerkId: userId }).lean() as UserDocument | null;
     
     // If not found, try to find by MongoDB _id
     if (!userData) {
       try {
-        userData = await User.findById(params.userId).lean() as UserDocument | null;
+        userData = await User.findById(userId).lean() as UserDocument | null;
       } catch (error) {
         console.error('Error finding user by ID:', error);
       }

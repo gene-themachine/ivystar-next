@@ -3,6 +3,7 @@
 import ProfileHeader from './ProfileHeader';
 import Gallery from './Gallery';
 import { useRouter } from 'next/navigation';
+import MessageButton from '@/components/MessageButton';
 
 // Define types for our data
 interface MentorProfileProps {
@@ -64,15 +65,6 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
     }
   })();
 
-  const handleMessageClick = () => {
-    // Navigate to message page with clerkId or username as fallback
-    if (clerkId) {
-      router.push(`/message/${clerkId}`);
-    } else {
-      router.push(`/message/${username}`);
-    }
-  };
-
   return (
     <div className="bg-gray-950 text-white min-h-screen">
       {/* Top 60% of the page - Header section */}
@@ -86,7 +78,7 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
           timeOnPlatform={calculatedTimeOnPlatform}
           profileImage={profileImage}
           backgroundImage={backgroundImage}
-          onMessageClick={handleMessageClick}
+          recipientId={clerkId}
           role={role}
           gradeLevel={gradeLevel}
           clerkId={clerkId}

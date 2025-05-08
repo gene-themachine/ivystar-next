@@ -2,6 +2,7 @@
 
 import ProfileHeader from './ProfileHeader';
 import Gallery from './Gallery';
+import MessageButton from '@/components/MessageButton';
 
 // Define types for our data
 interface MentorProfileProps {
@@ -21,6 +22,7 @@ interface MentorProfileProps {
     width: number;
     height: number;
   }[];
+  clerkId?: string; // Add clerkId for messaging
 }
 
 const MentorProfile: React.FC<MentorProfileProps> = ({
@@ -32,7 +34,8 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
   bio,
   profileImage,
   backgroundImage,
-  portfolio
+  portfolio,
+  clerkId
 }) => {
   // Calculate time on platform
   const getTimeOnPlatform = () => {
@@ -50,11 +53,6 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
     }
   };
 
-  const handleMessageClick = () => {
-    // This would typically open a message modal or navigate to message page
-    alert(`You clicked to message ${username}!`);
-  };
-
   return (
     <div className="bg-gray-950 text-white min-h-screen">
       {/* Top 60% of the page - Header section */}
@@ -68,7 +66,7 @@ const MentorProfile: React.FC<MentorProfileProps> = ({
           timeOnPlatform={getTimeOnPlatform()}
           profileImage={profileImage}
           backgroundImage={backgroundImage}
-          onMessageClick={handleMessageClick}
+          recipientId={clerkId} // Pass recipientId instead of onMessageClick
           role="mentor"
         />
       

@@ -8,12 +8,10 @@ import { currentUser } from '@clerk/nextjs/server';
 // GET request to fetch all comments for a post
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
-    // Ensure params is properly handled as a Promise
-    const params = await context.params;
-    const postId = String(params.id);
+    const { id: postId } = context.params;
     
     if (!postId) {
       return NextResponse.json(
@@ -71,12 +69,10 @@ export async function GET(
 // POST request to add a comment to a post
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
-    // Ensure params is properly handled as a Promise
-    const params = await context.params;
-    const postId = String(params.id);
+    const { id: postId } = context.params;
     
     const user = await currentUser();
     if (!user) {

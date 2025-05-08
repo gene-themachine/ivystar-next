@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { FaCheckCircle, FaUniversity, FaDollarSign, FaBookmark } from 'react-icons/fa';
+import MessageButton from '@/components/MessageButton';
 
 interface ProfileHeaderProps {
   username: string;
@@ -13,7 +14,7 @@ interface ProfileHeaderProps {
   profileImage: string;
   backgroundImage: string | null;
   showMessageButton?: boolean;
-  onMessageClick: () => void;
+  recipientId?: string;
   role?: 'mentor' | 'student';
   gradeLevel?: string;
   clerkId?: string;
@@ -28,7 +29,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profileImage,
   backgroundImage,
   showMessageButton = true,
-  onMessageClick,
+  recipientId,
   role = 'mentor',
   gradeLevel,
   clerkId
@@ -170,12 +171,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           
           {showMessageButton && (
             <div className="mt-4 sm:mt-0 flex gap-2">
-              <button 
-                onClick={onMessageClick}
-                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition text-sm"
-              >
-                Message
-              </button>
+              {recipientId && (
+                <MessageButton
+                  recipientId={recipientId} 
+                  recipientName={username}
+                  className="bg-orange-500 hover:bg-orange-600"
+                />
+              )}
               
               {role === 'mentor' && clerkId && (
                 <button 

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { FaCheckCircle, FaDollarSign, FaClock } from 'react-icons/fa';
+import MessageButton from '@/components/MessageButton';
 
 interface ProfileHeaderProps {
   username: string;
@@ -12,7 +13,7 @@ interface ProfileHeaderProps {
   profileImage: string;
   backgroundImage?: string | null;
   showMessageButton?: boolean;
-  onMessageClick?: () => void;
+  recipientId?: string;
   role?: 'mentor' | 'student';
   gradeLevel?: string;
   isEditing?: boolean;
@@ -27,7 +28,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   profileImage,
   backgroundImage,
   showMessageButton = true,
-  onMessageClick,
+  recipientId,
   role = 'student',
   gradeLevel,
   isEditing = false
@@ -130,14 +131,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             </div>
           </div>
           
-          {showMessageButton && (
+          {showMessageButton && recipientId && (
             <div className="mt-4 sm:mt-0">
-              <button 
-                onClick={onMessageClick}
-                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition text-sm"
-              >
-                Message
-              </button>
+              <MessageButton 
+                recipientId={recipientId}
+                recipientName={username}
+                className="bg-orange-500 hover:bg-orange-600"
+              />
             </div>
           )}
         </div>
