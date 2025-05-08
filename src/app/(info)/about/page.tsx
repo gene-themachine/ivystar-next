@@ -43,10 +43,13 @@ export default function About() {
             <div className="bg-gray-900 border border-gray-800 p-6 rounded-xl shadow-lg">
               <h2 className="text-xl font-bold mb-4 text-white">Our Journey</h2>
               <p className="text-white mb-4">
-                Born at Harvard Innovation Labs in 2024, Ivystar creates a safe haven where students develop skills and confidence without fear of judgment.
+              Incubated at Harvard Innovation Labs since 2024, Ivystar creates a safe haven where students build skills and confidence without fear of judgment.
               </p>
               <p className="text-white">
-                Our platform empowers users to ask questions and connect with mentors who've navigated similar paths—building bridges between experience and ambition.
+              Our platform empowers users to ask questions and connect with mentors who’ve navigated similar paths — building bridges between experience and ambition.
+              </p>
+              <p className="text-white">
+              This vision began in 2012 through a Harvard-founded education startup, rooted in the belief that mentorship changes lives. After more than a decade of connecting students and mentors, we’re excited to bring that vision online.
               </p>
             </div>
             
