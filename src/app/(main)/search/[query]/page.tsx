@@ -5,38 +5,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Post from '@/components/Post'
 import Mentor from '@/components/mentor/mentor'
-import Community from '@/components/search/community'
 import { motion } from 'framer-motion'
 
 // Mock data for communities
-interface CommunityType {
-  id: string
-  name: string
-  memberCount: number
-  description: string
-  image: string
-  tags: string[]
-}
-
-// Mock search results
-const mockCommunities: CommunityType[] = [
-  {
-    id: 'cs-101',
-    name: 'Computer Science 101',
-    memberCount: 1423,
-    description: 'A community for beginners learning computer science fundamentals',
-    image: '/community-cs.png',
-    tags: ['coding', 'beginners', 'computer-science']
-  },
-  {
-    id: 'math-wizards',
-    name: 'Math Wizards',
-    memberCount: 823,
-    description: 'Advanced mathematics discussions and problem solving',
-    image: '/community-math.png',
-    tags: ['mathematics', 'calculus', 'problem-solving']
-  }
-]
 
 const mockPosts = [
   {
@@ -46,7 +17,6 @@ const mockPosts = [
     profileImage: 'https://randomuser.me/api/portraits/men/32.jpg',
     institution: 'MIT',
     timeAgo: '3 hours ago',
-    community: 'Computer Science',
     title: 'Struggling with Data Structures',
     content: 'I\'m having trouble understanding binary trees and their implementations. Can someone recommend good resources or explain the concept in simple terms?',
     tags: ['algorithms', 'data-structures', 'help'],
@@ -64,7 +34,6 @@ const mockPosts = [
     profileImage: 'https://randomuser.me/api/portraits/women/44.jpg',
     institution: 'Stanford',
     timeAgo: '1 day ago',
-    community: 'Physics',
     title: 'Quantum Mechanics Question',
     content: 'Can someone explain the double-slit experiment in terms that would make sense to an undergraduate? I\'m struggling to grasp the wave-particle duality concept.',
     tags: ['quantum-physics', 'undergraduate'],
@@ -148,7 +117,7 @@ export default function SearchResultsPage() {
           <h1 className="text-2xl font-bold text-white mb-2">
             Search results for "<span className="text-[#0387D0]">{decodedQuery}</span>"
           </h1>
-          <p className="text-gray-400">Showing relevant communities, posts, and mentors</p>
+          <p className="text-gray-400">Showing relevant posts and mentors</p>
         </div>
         
         {/* Tab Navigation - Similar to saved page */}
@@ -160,14 +129,6 @@ export default function SearchResultsPage() {
             onClick={() => setActiveTab('All')}
           >
             All
-          </button>
-          <button
-            className={`py-3 px-6 font-medium text-sm ${activeTab === 'Communities' 
-              ? 'text-white border-b-2 border-orange-500' 
-              : 'text-gray-400 hover:text-gray-200'}`}
-            onClick={() => setActiveTab('Communities')}
-          >
-            Communities
           </button>
           <button
             className={`py-3 px-6 font-medium text-sm ${activeTab === 'Posts' 
@@ -193,41 +154,6 @@ export default function SearchResultsPage() {
           </div>
         ) : (
           <>
-            {/* Communities Content */}
-            {(activeTab === 'All' || activeTab === 'Communities') && (
-              <div className={`${activeTab !== 'All' ? '' : 'mb-10'}`}>
-                {activeTab !== 'All' && (
-                  <h2 className="text-xl font-bold text-white mb-4">Communities</h2>
-                )}
-                
-                {mockCommunities.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    {mockCommunities.map(community => (
-                      <Community
-                        key={community.id}
-                        id={community.id}
-                        name={community.name}
-                        memberCount={community.memberCount}
-                        description={community.description}
-                        image={community.image}
-                        tags={community.tags}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-gray-400 text-center py-8">No communities found</div>
-                )}
-                
-                {mockCommunities.length > 0 && activeTab === 'All' && (
-                  <div className="mb-4">
-                    <Link href={`/search/communities/${query}`} className="text-[#0387D0] text-sm hover:underline">
-                      View all community results →
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
-            
             {/* Posts Content */}
             {(activeTab === 'All' || activeTab === 'Posts') && (
               <div className={`${activeTab !== 'All' ? '' : 'mb-10'}`}>
@@ -246,7 +172,6 @@ export default function SearchResultsPage() {
                         profileImage={post.profileImage}
                         institution={post.institution}
                         timeAgo={post.timeAgo}
-                        community={post.community}
                         title={post.title}
                         content={post.content}
                         tags={post.tags}

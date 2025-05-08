@@ -8,7 +8,6 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { 
   ProfileHeader, 
   ProfileBioSection, 
-  ProfileAccountSettings, 
   ProfilePortfolio,
   ProfileActions
 } from "@/components/mine";
@@ -643,12 +642,6 @@ export default function ProfilePage() {
         <ProfilePortfolio
           workSamples={workSamples}
           onUpdateWorkSamples={handleUpdateWorkSamples}
-        />
-        
-        {/* Account Settings */}
-        <ProfileAccountSettings
-          onEditProfile={handleEditProfile}
-          onEditPortfolio={() => window.scrollTo({ top: document.getElementById('portfolio-section')?.offsetTop || 0, behavior: 'smooth' })}
         />
       </div>
     </div>

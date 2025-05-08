@@ -170,10 +170,12 @@ export default function Mentor({
               <div className="text-gray-400 text-sm">
                 {school}
               </div>
+              {/* Hourly rate temporarily hidden
               <div className="flex items-center bg-blue-900/30 px-2 py-0.5 rounded-md text-sm w-fit mt-1">
                 <span className="text-blue-400 font-medium">${hourlyRate}</span>
                 <span className="text-gray-400 ml-1">/hour</span>
               </div>
+              */}
             </div>
           </div>
           

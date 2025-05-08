@@ -125,7 +125,7 @@ export default function Header({
         {/* Hide the navigation on mobile to save space */}
         <nav className="hidden md:flex items-center gap-8">
           <a href="/how-it-works" className="text-gray-300 font-medium hover:text-white relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-blue-400 after:bottom-[-6px] after:left-0 after:transition-width after:duration-200 hover:after:w-full">
-            How it works
+            How It Works
           </a>
           <a href="/about" className="text-gray-300 font-medium hover:text-white relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-blue-400 after:bottom-[-6px] after:left-0 after:transition-width after:duration-200 hover:after:w-full">
             About

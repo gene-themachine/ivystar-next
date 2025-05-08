@@ -156,10 +156,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               {role === 'mentor' && school && (
                 <span>{school}</span>
               )}
-              <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
+              {/* <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
                 <FaDollarSign className="text-green-400 mr-1" />
                 <span className="text-green-400 font-medium">${hourlyRate.toFixed(2)}/hr</span>
-              </div>
+              </div> */}
             </div>
             {timeOnPlatform && !timeOnPlatform.includes('NaN') && (
               <div className="mt-4 flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm w-max">

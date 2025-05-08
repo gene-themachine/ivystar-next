@@ -18,6 +18,7 @@ interface MentorType {
   bio?: string;
   isVerified?: boolean;
   projects?: any[];
+  role?: 'mentor' | 'student';
 }
 
 export default function Saved() {
@@ -100,6 +101,7 @@ export default function Saved() {
                          ? post.author.field 
                          : undefined,
             images: post.images || [],
+            role: post.author.role || 'student',
           };
         });
         
