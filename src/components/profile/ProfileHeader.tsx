@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { FaCheckCircle, FaUniversity, FaDollarSign, FaBookmark } from 'react-icons/fa';
+import { FaCheckCircle, FaDollarSign, FaBookmark } from 'react-icons/fa';
 import MessageButton from '@/components/MessageButton';
 
 interface ProfileHeaderProps {
@@ -152,21 +152,20 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 </div>
               )}
             </div>
-            <div className="flex items-center text-gray-400 mt-2">
-              <FaUniversity className="mr-2" />
-              <span>{school}</span>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="flex items-center justify-between text-gray-400 mt-2 gap-3 flex-wrap">
+              {role === 'mentor' && school && (
+                <span>{school}</span>
+              )}
               <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
                 <FaDollarSign className="text-green-400 mr-1" />
                 <span className="text-green-400 font-medium">${hourlyRate.toFixed(2)}/hr</span>
               </div>
-              {timeOnPlatform && (
-                <div className="flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm">
-                  <span className="text-blue-400 font-medium">{timeOnPlatform}</span>
-                </div>
-              )}
             </div>
+            {timeOnPlatform && !timeOnPlatform.includes('NaN') && (
+              <div className="mt-4 flex items-center bg-gray-800 rounded-lg px-3 py-1.5 text-sm w-max">
+                <span className="text-blue-400 font-medium">{timeOnPlatform}</span>
+              </div>
+            )}
           </div>
           
           {showMessageButton && (

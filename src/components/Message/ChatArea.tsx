@@ -11,6 +11,7 @@ interface Message {
   time: string;
   isUser?: boolean;
   senderId?: string;
+  senderName?: string;
 }
 
 interface ChatAreaProps {
@@ -26,6 +27,7 @@ export default function ChatArea({ conversationId, messages, userId, userName = 
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [userMap, setUserMap] = useState<Record<string, { username: string; profilePhoto: string }>>({});
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -33,6 +35,39 @@ export default function ChatArea({ conversationId, messages, userId, userName = 
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  // Fetch user info for message senders
+  useEffect(() => {
+    const senderIds = messages
+      .map((m) => m.senderId)
+      .filter((id): id is string => typeof id === 'string');
+
+    const uniqueSenderIds = senderIds.filter((id, idx) => senderIds.indexOf(id) === idx && !(id in userMap));
+
+    if (uniqueSenderIds.length === 0) return;
+
+    // Fetch all unknown users in parallel
+    Promise.all(
+      uniqueSenderIds.map((id) =>
+        fetch(`/api/users/${id}`).then((res) => (res.ok ? res.json() : null))
+      )
+    )
+      .then((results) => {
+        const updates: Record<string, { username: string; profilePhoto: string }> = {};
+        results.forEach((data, idx) => {
+          if (data) {
+            updates[uniqueSenderIds[idx]] = {
+              username: data.username,
+              profilePhoto: data.profilePhoto,
+            };
+          }
+        });
+        if (Object.keys(updates).length > 0) {
+          setUserMap((prev) => ({ ...prev, ...updates }));
+        }
+      })
+      .catch((err) => console.error('Error fetching user info for messages', err));
+  }, [messages, userMap]);
 
   const handleSend = async () => {
     if (!newMessage.trim() || !userId) return;
@@ -60,7 +95,7 @@ export default function ChatArea({ conversationId, messages, userId, userName = 
       {/* Header */}
       <div className="h-16 px-5 border-b border-gray-700 flex items-center justify-between bg-gray-800 shrink-0">
         <div className="flex items-center gap-3">
-          <p className="font-medium text-lg text-white">{recipientName}</p>
+          <p className="font-medium text-lg text-white truncate max-w-xs">{recipientName}</p>
         </div>
       </div>
       
@@ -82,12 +117,17 @@ export default function ChatArea({ conversationId, messages, userId, userName = 
             const isSelf = message.senderId
               ? message.senderId === userId
               : message.isUser || false;
+
+            const senderInfo = message.senderId ? userMap[message.senderId] : undefined;
+
             return (
               <MessageBubble
                 key={message.id}
                 content={message.content}
                 time={message.time}
                 isUser={isSelf}
+                profileImage={senderInfo?.profilePhoto}
+                username={senderInfo?.username || message.senderName}
                 delay={index * 0.1}
               />
             );
