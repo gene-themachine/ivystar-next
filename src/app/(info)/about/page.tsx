@@ -11,16 +11,18 @@ export default function About() {
         <div className="space-y-12">
           {/* Hero Section */}
           <div className="text-center">
-            <div className="mx-auto w-56 h-56 mb-6 relative">
-              <Image 
-                src="/ivystar-logo.png" 
-                alt="Ivystar" 
-                width={224}
-                height={224}
-                className="object-contain"
-                priority
-              />
-            </div>
+            <Link href="/" aria-label="Go to home">
+              <div className="mx-auto w-56 h-56 mb-6 relative hover:opacity-90 transition-opacity">
+                <Image 
+                  src="/ivystar-logo.png" 
+                  alt="Ivystar" 
+                  width={224}
+                  height={224}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </Link>
             
             <h2 className="text-3xl font-bold mb-3 tracking-tight text-orange-500">
             Our vision is for everyone to have a mentor
@@ -41,15 +43,15 @@ export default function About() {
           {/* Story & Offerings */}
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-gray-900 border border-gray-800 p-6 rounded-xl shadow-lg">
-              <h2 className="text-xl font-bold mb-4 text-white">Our Journey</h2>
-              <p className="text-white mb-4">
-              Incubated at Harvard Innovation Labs since 2024, Ivystar creates a safe haven where students build skills and confidence without fear of judgment.
+              <h2 className="text-xl font-bold mb-4 text-white">Our Story</h2>
+              <p className="text-white mb-2">
+              Incubated at Harvard Innovation Labs since 2024, Ivystar is a safe and trusted space where students grow, ask bold questions, and build lasting confidence — all without fear of judgment. We connect students with mentors who've walked similar paths, creating bridges between lived experience and future ambition.
               </p>
-              <p className="text-white">
-              Our platform empowers users to ask questions and connect with mentors who’ve navigated similar paths — building bridges between experience and ambition.
+              <p className="text-white mb-2">
+              The heart of Ivystar has been years in the making. Since 2012, our founder — a Harvard alum — has worked alongside families to create spaces where learning feels personal, powerful, and full of possibility. One belief stayed constant: <em>one mentor can change a life.</em>
               </p>
-              <p className="text-white">
-              This vision began in 2012 through a Harvard-founded education startup, rooted in the belief that mentorship changes lives. After more than a decade of connecting students and mentors, we’re excited to bring that vision online.
+              <p className="text-white mb-2">
+              Ivystar is a brand-new platform, but it carries forward the same mission of meaningful mentorship. It's now reimagined for an anonymous online world where every student has access to a mentor who inspires them to dream big.
               </p>
             </div>
             
@@ -57,10 +59,10 @@ export default function About() {
               <h3 className="text-xl font-bold mb-4 text-white">What We Offer</h3>
               <ul className="space-y-3">
                 {[
-                  "Anonymous learning environments where ideas flow freely",
-                  "Mentor connections that inspire and guide",
-                  "Skill-building tools designed for real-world application",
-                  "A community that celebrates growth and resilience"
+                  "A safe, anonymous space where ideas flow freely and curiosity is celebrated",
+                  "Mentorship that inspires confidence, purpose, and growth",
+                  "Real-world skill-building designed to empower students beyond the classroom",
+                  "A supportive community that values reflection, resilience, and becoming your best self"
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-2">
                     <span className="text-orange-300 mt-1 text-xl font-bold">•</span>

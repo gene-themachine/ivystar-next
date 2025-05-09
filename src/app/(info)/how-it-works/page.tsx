@@ -11,15 +11,17 @@ export default function HowItWorks() {
       <div className="container mx-auto px-6 py-12 max-w-4xl space-y-12">
         {/* Hero */}
         <div className="text-center space-y-4 mb-10">
-          <div className="w-64 h-64 mx-auto relative">
-            <Image
-              src="/ivystar-logo.png"
-              alt="Ivystar Logo"
-              fill
-              className="object-contain"
-              priority
-            />
-          </div>
+          <Link href="/" aria-label="Go to home">
+            <div className="w-64 h-64 mx-auto relative hover:opacity-90 transition-opacity">
+              <Image
+                src="/ivystar-logo.png"
+                alt="Ivystar Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </Link>
           <h1 className="text-4xl font-bold text-white">How It Works</h1>
         </div>
 
